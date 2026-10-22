@@ -1,0 +1,107 @@
+---
+title: "The assistant prepares the case"
+description: "Open a case from the alert on Moussa Ndiaye. The assistant gathers the evidence, proposes tasks and drafts a cited summary for you to review and edit."
+type: tutorial
+tracks: [operations]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+example_chapter: tutorial/assistant-prepares-the-case
+glossary_terms: [case, alert, task]
+help_keys: [cases.workspace]
+---
+
+import { AGENT, PageMeta, ExampleNote, PreviewNotice, TryIt, KeyTakeaway, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations"]} minutes={10} availability="ga" />
+
+**In this chapter** (about 10 minutes): you open a case from the alert, and {AGENT} prepares it.
+You see what the assistant gathers and proposes, and how you stay in charge of every word that goes into the file.
+
+<ExampleNote />
+
+## What happens in the story
+
+The analyst has read the alert ([chapter 7](/tutorial/an-alert-explained)) and Moussa's profile ([chapter 8](/tutorial/see-the-whole-picture)). Three senders, one agent and 24,000,000 XOF in six days need a proper investigation.
+
+An alert answers "why was this raised?". A **case** answers "what did we investigate, what did we decide and what did we do?". The case is where the work, the evidence and the decision live together.
+
+## Open the case
+
+<PreviewNotice feature="Opening a case from an alert, with a task checklist from a case template," />
+
+From the alert, open a case. The case opens from the _AML suspicion review_ case template, which Teranga Transfer's starter pack provides. The template sets the plan: stages, mandatory tasks and who must check whose work.
+
+The new case, `cas_smp_0001`, names Moussa Ndiaye as its subject and links the alert. Cases are restricted: only people with access to anti-money laundering (AML) investigations can open them.
+
+## The assistant prepares the file
+
+<PreviewNotice feature="Case preparation by the assistant" />
+
+You can prepare a case by hand. When {AGENT} is on, it does the gathering for you in a few seconds. It proposes; it does not decide.
+
+<Steps>
+  <Step title="It gathers the linked items">
+    {AGENT} collects what belongs in the file and shows it as suggestions:
+    - all five transfers to Moussa, including `SAMPLE-REMIT-0004` and `SAMPLE-REMIT-0005`, which arrived after the alert
+    - the screening match from [chapter 5](/tutorial/screen-and-clear-a-match), already cleared as a false positive, with its reason
+    - profile facts: three senders, cash payouts at Point Marché Tilène, the wallet `SAMPLE-WALLET-0002`
+  </Step>
+  <Step title="It proposes tasks">
+    The template already lists the core tasks, such as reviewing the activity and confirming the typology. {AGENT} suggests extra tasks for this case. For example: "Check whether Fatou Ba and Cheikh Tall have any link to Moussa Ndiaye" and "Review cash payouts at Point Marché Tilène".
+  </Step>
+  <Step title="It drafts a summary with citations">
+    {AGENT} drafts a short case summary. Every sentence links to its source: a transfer, the alert explanation or a profile field. For example: "Moussa Ndiaye received five transfers totalling 24,000,000 XOF in six days [1–5], from three senders [profile], four paid in cash at Point Marché Tilène [1, 3, 4, 5]."
+  </Step>
+</Steps>
+
+{AGENT} works only from the data in your account that you are allowed to see. It does not invent facts. A sentence it cannot back with a source is flagged, not presented as true.
+
+## You review and approve
+
+Nothing the assistant proposes enters the case until you accept it.
+
+<Steps>
+  <Step title="Accept the evidence">
+    Review the suggested links. Accept the five transfers and the screening match. Each accepted item becomes a link in the case.
+  </Step>
+  <Step title="Choose the tasks">
+    Accept the task about the senders. Assign it to yourself. Dismiss any suggestion you do not need; dismissing is recorded too.
+  </Step>
+  <Step title="Edit the summary">
+    Open the draft in the editor. Click a citation to check its source. Reword what you would say differently, then save. The saved summary shows that the assistant drafted it and that you edited and approved it.
+  </Step>
+</Steps>
+
+<Screenshot name="cases-workspace-assistant-draft" alt="The case on Moussa Ndiaye with the assistant's draft summary open beside the checklist. Each sentence carries a citation, and Accept and Edit buttons sit side by side, so the analyst approves every line." />
+
+The audit log (preview) records each step: what the assistant proposed, what you accepted, edited or dismissed, and when. See [Human in the loop](/ai-assistant/human-in-the-loop) for everything the assistant may and may not do.
+
+## Work the checklist
+
+The case checklist (preview) is where you work. Tasks are grouped by stage, mandatory tasks first. One task is already done: the screening task completes by itself because you cleared Moussa's match in chapter 5.
+
+Some tasks wait on others. Confirming the typology, for example, waits until the activity review and the customer contact are done. That task also needs a second person to review it. One person never both does and approves that work.
+
+<TryIt>
+1. Go to **Alerts** and open the alert on **Moussa Ndiaye**.
+2. Open a case from the alert (preview).
+3. If {AGENT} is enabled for your account, review its suggestions. Accept the five transfers and the screening match.
+4. Open the draft summary, check one citation and edit one sentence. Save it.
+5. Open the case checklist (preview) and see which task is already done.
+</TryIt>
+
+<KeyTakeaway>
+The assistant does the gathering and the first draft; you make every call. Each suggestion is cited, and nothing enters the case until a person accepts it.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+Moussa's profile now links to the open case, next to the alert that started it.
+
+<Screenshot name="entities-profile-cases" alt="Moussa Ndiaye's profile showing one open alert and the open case linked to it. The investigation is part of his single view." />
+
+## Next
+
+- Next chapter: [Decide and report](/tutorial/decide-and-report). The money laundering reporting officer (MLRO) decides, and Teranga Transfer files a suspicious transaction report.
+- Go deeper: [Cases](/guides/cases/overview) and [AI assistant](/ai-assistant/overview).

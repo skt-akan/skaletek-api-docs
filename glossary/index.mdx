@@ -1,0 +1,606 @@
+---
+title: "Glossary"
+description: "Plain-language definitions of the compliance and product terms used across Skaletek, each with a remittance example, French form and related terms."
+type: glossary
+tracks: [operations, configure, build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+---
+
+import { PageMeta, ExampleNote } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations", "configure", "build"]} minutes={20} availability="ga" />
+
+This glossary defines the terms you meet in Skaletek and in these docs. Each entry starts with a one-sentence definition, then shows the term in the remittance example and gives its French form. Terms are in alphabetical order.
+
+<ExampleNote />
+
+The examples follow Teranga Transfer, a fictional money transfer company in Senegal. Its supervisor is the BCEAO (Banque Centrale des États de l'Afrique de l'Ouest, the Central Bank of West African States). It files suspicion reports with CENTIF-GN, the financial intelligence unit set up for this example.
+
+## Action
+
+What a rule does when it matches.
+
+An action can raise an alert, change an event's status, add a label to a customer profile, open a case or start a report. A rule can have several actions. In shadow mode, actions are recorded but not carried out.
+
+- **In the remittance example:** Rule 1's action raises a high-severity alert on the recipient, at most once per recipient every 7 days.
+- **In the product:** the rule builder, under **Settings** › **Configuration** › **Rules**
+- **French:** *action*
+- **Synonyms:** rule outcome
+- **Related:** [Rule](#rule) · [Alert](#alert) · [Shadow mode](#shadow-mode)
+
+## Alert
+
+A notice that a rule matched and someone should look, with the evidence for why.
+
+An alert has a severity, an assignee and a status: open, acknowledged, investigating, then resolved or dismissed. A dismissed or resolved alert can be reopened. An alert records a detection; the investigation itself happens in a case.
+
+- **In the remittance example:** Rule 1 raises alert `alt_smp_0001` on Moussa Ndiaye when the third qualifying transfer, `SAMPLE-REMIT-0003`, arrives.
+- **In the product:** **Alerts**
+- **French:** *alerte*
+- **Synonyms:** hit, flag (avoid both in these docs)
+- **Related:** [Alert explanation](#alert-explanation) · [Alert vs case](#alert-vs-case) · [Case](#case) · [Severity](#severity)
+
+## Alert explanation
+
+The facts that made a rule match, shown with every alert.
+
+The explanation shows the values that triggered the alert, the time window, the events involved, the contributing factors and the customer's history. It is built from your actual data and the rule's evaluation, not generated guesses.
+
+- **In the remittance example:** the explanation on `alt_smp_0001` lists three transfers to Moussa from three senders within 7 days, each between 90% and 100% of the 5,000,000 XOF declaration threshold.
+- **In the product:** **Alerts**, alert detail
+- **French:** *explication de l'alerte*
+- **Synonyms:** evidence, explainability
+- **Related:** [Alert](#alert) · [Rule](#rule) · [Pattern](#pattern)
+
+## Alert vs case
+
+An alert says why something was flagged; a case records what was investigated, decided and done about it.
+
+One case can gather several alerts, transfers, screening matches and customer profiles. Once an alert is in a case, you close it by closing the case. You write the investigation notes on the case, not on the alert.
+
+- **In the remittance example:** alert `alt_smp_0001` is the trigger; case `cas_smp_0001` holds the five transfers, the cleared screening match, the tasks and the decision of the money laundering reporting officer (MLRO).
+- **French:** *alerte* vs *dossier d'enquête*
+- **Related:** [Alert](#alert) · [Case](#case)
+
+## Anti-money laundering and countering the financing of terrorism (AML/CFT)
+
+The laws, controls and reporting duties that stop criminals from moving illicit money or funding terrorism.
+
+AML/CFT covers knowing your customers, screening them, monitoring their activity and reporting suspicion to the authorities. Regulators expect you to apply these controls in proportion to your risks. Skaletek supports each step and keeps the record.
+
+- **In the remittance example:** Teranga Transfer's AML/CFT duties include monitoring transfers, screening recipients and filing suspicious transaction reports (STRs) with CENTIF-GN.
+- **French:** *lutte contre le blanchiment de capitaux et le financement du terrorisme (LBC/FT)*
+- **Synonyms:** AML, AML/CTF
+- **Related:** [Transaction monitoring](#transaction-monitoring) · [Know your customer (KYC)](#know-your-customer-kyc) · [Suspicious transaction report (STR)](#suspicious-transaction-report-str) · [Risk-based approach](#risk-based-approach)
+
+## API key
+
+The credential your systems use to call the Skaletek application programming interface (API).
+
+An administrator creates API keys and can limit each key to what it needs, such as sending events for one template. Treat a key like a password. You can revoke it at any time.
+
+- **In the remittance example:** Teranga's transfer app uses an API key to send each transfer to Skaletek as an event.
+- **In the product:** **Settings** › **General Settings** › **Configurations** › **API keys**
+- **French:** *clé d'API*
+- **Synonyms:** access key
+- **Related:** [Event](#event) · [Webhook](#webhook)
+
+## Beneficial owner (UBO)
+
+The person who ultimately owns or controls a business, directly or through other companies.
+
+When you onboard a business, you identify its beneficial owners and check them like any other customer. UBO stands for ultimate beneficial owner. Ownership thresholds depend on your local regulation.
+
+- **In the remittance example:** Ibrahima Fall is the beneficial owner of Point Marché Tilène and appears in its ownership graph.
+- **In the product:** **Verifications**, **Company** tab, then the **Ownership** tab of the organization
+- **French:** *bénéficiaire effectif*
+- **Synonyms:** ultimate beneficial owner, UBO
+- **Related:** [Know your business (KYB)](#know-your-business-kyb) · [Politically exposed person (PEP)](#politically-exposed-person-pep)
+
+## Case
+
+The record of one investigation: who and what it concerns, the work done, the decision and how it closed.
+
+A case follows a case template that sets the tasks to complete. It links the alerts, transfers, screening matches and customer profiles involved without copying them. A case closes only when its required tasks are done and a decision is recorded.
+
+- **In the remittance example:** case `cas_smp_0001`, opened from alert `alt_smp_0001`, uses the *AML suspicion review* template and closes with the STR reference.
+- **In the product:** **Cases**
+- **French:** *dossier d'enquête*
+- **Synonyms:** investigation, investigation case
+- **Related:** [Alert vs case](#alert-vs-case) · [Alert](#alert) · [Suspicious transaction report (STR)](#suspicious-transaction-report-str) · [Examiner export](#examiner-export)
+
+## Cash or threshold declaration (CTR)
+
+A report you must send to the authority for any transaction at or above a set amount, whether or not you suspect anything.
+
+The authority sets the amount. Some jurisdictions call it a cash transaction report (CTR). Unlike an STR, it is automatic: the amount alone triggers it.
+
+- **In the remittance example:** the declaration threshold is 5,000,000 XOF (simplified illustration). Each of the five transfers stays below it, so none triggers a declaration on its own.
+- **In the product:** **Data** › **Report**
+- **French:** *déclaration des opérations en espèces* (or *déclaration systématique*)
+- **Synonyms:** cash transaction report, threshold report
+- **Related:** [Parameter](#parameter) · [Structuring](#structuring) · [STR vs SAR](#str-vs-sar)
+
+## Change package
+
+A set of proposed updates to your rules, parameters or reports, created when a regulation you follow changes.
+
+A change package shows what changed in the text and which of your rules and reports it affects. It proposes drafts, always in shadow mode or for review, never live. You accept, dismiss or ask for a revision; activating the drafts is a separate step.
+
+- **In the remittance example:** a fictional instruction lowers the declaration threshold to 4,000,000 XOF. The change package proposes the new parameter value, and an administrator activates it after testing on past transfers.
+- **In the product:** the regulatory compliance area (preview)
+- **French:** *lot de modifications*
+- **Synonyms:** regulatory change proposal
+- **Related:** [Obligation](#obligation) · [Parameter](#parameter) · [Shadow mode](#shadow-mode) · [Test on past data (simulation)](#test-on-past-data-simulation)
+
+## Customer due diligence (CDD)
+
+The checks you run to know who a customer is and what activity to expect from them.
+
+CDD covers identifying and verifying the customer, understanding the purpose of the relationship and keeping that knowledge up to date. It is the baseline level; higher-risk customers get enhanced due diligence.
+
+- **In the remittance example:** Fatou Ba and Cheikh Tall pass CDD when they are onboarded, shortly before they send to Moussa.
+- **French:** *mesures de vigilance à l'égard de la clientèle*
+- **Synonyms:** due diligence, standard due diligence
+- **Related:** [Enhanced due diligence (EDD)](#enhanced-due-diligence-edd) · [Know your customer (KYC)](#know-your-customer-kyc) · [Risk-based approach](#risk-based-approach)
+
+## Disposition
+
+The decision you record on a screening match: is the customer the person on the list or not?
+
+A match starts as pending. You set it to false positive or confirmed match, or escalate it for a senior decision. An alert with a pending or escalated match cannot be closed.
+
+- **In the remittance example:** the analyst sets the disposition of Moussa's near match to false positive, with the reason "different date of birth and nationality".
+- **In the product:** **Screening**, screening detail
+- **French:** *décision sur la correspondance*
+- **Synonyms:** match decision, clearing a match
+- **Related:** [Screening match](#screening-match) · [False positive](#false-positive) · [True match](#true-match)
+
+## Enhanced due diligence (EDD)
+
+Extra checks for customers or relationships that carry higher risk.
+
+EDD can mean more documents, checking the source of funds, senior approval or closer monitoring. Regulation requires it for some situations, such as politically exposed persons. A case decision can call for EDD on a relationship.
+
+- **In the remittance example:** if the MLRO finds suspicion, Teranga may apply EDD to its relationship with Moussa Ndiaye.
+- **French:** *mesures de vigilance renforcées*
+- **Synonyms:** enhanced checks
+- **Related:** [Customer due diligence (CDD)](#customer-due-diligence-cdd) · [Politically exposed person (PEP)](#politically-exposed-person-pep) · [Risk-based approach](#risk-based-approach)
+
+## Entity (customer profile)
+
+A person or business that Skaletek recognises across all your events, with everything known about it on one profile.
+
+The customer profile gathers activity, relationships, labels, screening results, alerts, cases and history. Skaletek links each new event to the profiles it involves. The same applies to counterparties, such as partner agents.
+
+- **In the remittance example:** Moussa Ndiaye's profile (`ent_smp_0002`) shows five transfers from three senders, most paid at one agent.
+- **In the product:** **Data** › **Entities**
+- **French:** *entité (profil client)*
+- **Synonyms:** customer profile, entity profile, customer 360°
+- **Related:** [Event](#event) · [Label](#label) · [Lineage](#lineage) · [Role](#role)
+
+## Event
+
+A record of something that happened, such as a transfer, a withdrawal or a claim, sent to Skaletek by your systems.
+
+Each event follows one template and cannot be changed once received; a correction is a new event. Events feed the customer profiles, the rules and your reports.
+
+- **In the remittance example:** each of the five transfers is an event, from `evt_smp_0001` to `evt_smp_0005`.
+- **In the product:** **Data** › **Transactions & Events** (page **Events**)
+- **French:** *événement*
+- **Synonyms:** transaction (in a payment context)
+- **Related:** [Template](#template) · [External reference](#external-reference) · [Event status](#event-status) · [Quarantine](#quarantine)
+
+## Event status
+
+Where an event stands in your own review process, such as pending or approved.
+
+You define the possible statuses per template. A rule can change an event's status, for example to hold a transfer for review.
+
+- **In the remittance example:** Teranga could set a rule to hold transfers to a recipient under review until an analyst approves them.
+- **In the product:** **Data** › **Transactions & Events**, event detail
+- **French:** *statut de l'événement*
+- **Synonyms:** workflow status
+- **Related:** [Event](#event) · [Action](#action)
+
+## Examiner export
+
+A package of a case's record, decisions and evidence, prepared for a supervisor's inspection.
+
+The export contains what you are allowed to see, with a fingerprint for each piece of evidence so it can be checked. Creating and downloading it are both recorded in the audit log.
+
+- **In the remittance example:** Teranga exports case `cas_smp_0001` to show the BCEAO how the alert on Moussa was handled.
+- **In the product:** Preview. **Cases**, case detail
+- **French:** *export pour l'inspection*
+- **Synonyms:** audit export, case export
+- **Related:** [Case](#case) · [Traceability](#traceability)
+
+## External reference
+
+Your own identifier for an event, such as a transaction number.
+
+Skaletek gives each event its own identifier as well. Use the external reference to find an event by the number your teams already know.
+
+- **In the remittance example:** `SAMPLE-REMIT-0001` is Teranga's reference for the first transfer; `evt_smp_0001` is Skaletek's.
+- **In the product:** **Data** › **Transactions & Events**, EVENT ID / REF column
+- **French:** *référence externe*
+- **Synonyms:** transaction reference
+- **Related:** [Event](#event)
+
+## False positive
+
+A screening match or alert that turns out not to be a concern after review.
+
+For screening, it means the customer is not the person on the list. You record it with a reason, and the same list entry stops coming back for that customer. False positives are normal; a reasoned clearance is what an examiner looks for.
+
+- **In the remittance example:** Moussa's near match on the sample sanctions list is cleared as a false positive: a different date of birth and nationality.
+- **In the product:** **Screening**
+- **French:** *faux positif*
+- **Synonyms:** cleared match
+- **Related:** [True match](#true-match) · [Disposition](#disposition) · [Screening match](#screening-match)
+
+## Financial intelligence unit (FIU)
+
+The national authority that receives suspicious transaction reports and other declarations, analyses them and passes cases to prosecutors.
+
+Each country has one FIU. In West African francophone countries, the FIU is the CENTIF.
+
+- **In the remittance example:** Teranga files its STR with CENTIF-GN, the financial intelligence unit set up for this example.
+- **French:** *cellule de renseignement financier (CRF)*; in Senegal, *CENTIF*
+- **Synonyms:** financial intelligence agency
+- **Related:** [Suspicious transaction report (STR)](#suspicious-transaction-report-str) · [Money laundering reporting officer (MLRO)](#money-laundering-reporting-officer-mlro)
+
+## Know your business (KYB)
+
+The process of identifying a business, its legal details, its owners and the people who act for it.
+
+KYB checks registration documents, beneficial owners and directors, and screens each of them. It applies to business customers and to partners such as payout agents.
+
+- **In the remittance example:** Point Marché Tilène is onboarded with KYB, using its trade register (RCCM) and tax identification (NINEA) numbers, and its beneficial owner Ibrahima Fall is identified.
+- **In the product:** **Verifications**, **Company** tab
+- **French:** *KYB (connaissance des entreprises clientes)*
+- **Synonyms:** business verification
+- **Related:** [KYC vs KYB](#kyc-vs-kyb) · [Beneficial owner (UBO)](#beneficial-owner-ubo) · [Know your customer (KYC)](#know-your-customer-kyc)
+
+## Know your customer (KYC)
+
+The process of identifying a person and verifying who they are before and during the relationship.
+
+KYC usually checks an identity document and the person's details, then screens them. It is part of customer due diligence.
+
+- **In the remittance example:** Aminata Sow completes KYC in Teranga's app with her passport, `SAMPLE-P-0001`.
+- **In the product:** **Verifications**, **Individual** tab
+- **French:** *connaissance du client (KYC)*
+- **Synonyms:** identity verification
+- **Related:** [KYC vs KYB](#kyc-vs-kyb) · [Customer due diligence (CDD)](#customer-due-diligence-cdd)
+
+## KYC vs KYB
+
+KYC verifies a person; KYB verifies a business and the people behind it.
+
+KYB includes KYC on the business's beneficial owners and representatives. Both end with screening and a decision to start the relationship or not.
+
+- **In the remittance example:** Aminata Sow goes through KYC; Point Marché Tilène goes through KYB, which identifies Ibrahima Fall.
+- **French:** *KYC* vs *KYB*
+- **Related:** [Know your customer (KYC)](#know-your-customer-kyc) · [Know your business (KYB)](#know-your-business-kyb)
+
+## Label
+
+A tag on a customer profile, such as "high risk", that rules can set and check.
+
+Labels stay on the profile across events until removed. They can come from a rule, a screening result or a person. Rules can use them, for example to apply a lower threshold to labelled customers.
+
+- **In the remittance example:** after the decision, Teranga could label Moussa's profile so that future rules watch him more closely.
+- **In the product:** **Data** › **Entities**, entity page header (**Add label**)
+- **French:** *étiquette*
+- **Synonyms:** tag, flag (avoid)
+- **Related:** [Entity (customer profile)](#entity-customer-profile) · [Action](#action)
+
+## Lineage
+
+Where a value on a customer profile came from: which event or source supplied it, and when.
+
+Lineage also shows when two profiles were merged or split. It lets you answer "why does the profile say this?" with evidence.
+
+- **In the remittance example:** the lineage of Moussa's address shows which transfer supplied it.
+- **In the product:** the entity profile's change history (no separate screen)
+- **French:** *provenance des données*
+- **Synonyms:** data provenance, profile history
+- **Related:** [Entity (customer profile)](#entity-customer-profile) · [Traceability](#traceability)
+
+## List
+
+A named set of entries, such as sanctioned persons, blocked countries or trusted customers.
+
+Screening checks people and businesses against lists of names. Rules can check whether a value, such as a country, is on a list you maintain.
+
+- **In the remittance example:** a clearly labelled sample sanctions list holds one fictional entry that nearly matches Moussa Ndiaye.
+- **In the product:** **Screening** and **Settings** › **Configuration** › **Watchlists** (page **Lists**)
+- **French:** *liste*
+- **Synonyms:** watchlist, managed list
+- **Related:** [Sanctions screening](#sanctions-screening) · [Rule](#rule)
+
+## Money laundering reporting officer (MLRO)
+
+The person responsible for deciding whether suspicion exists and for reporting it to the FIU.
+
+The MLRO, or compliance officer, signs off suspicion decisions and filings. Some regulators name this role differently.
+
+- **In the remittance example:** Teranga's MLRO decides there is suspicion on case `cas_smp_0001` and files the STR.
+- **French:** *responsable LBC/FT* (in the West African Economic and Monetary Union, UEMOA, often the *correspondant CENTIF*)
+- **Synonyms:** compliance officer, nominated officer
+- **Related:** [Suspicious transaction report (STR)](#suspicious-transaction-report-str) · [Case](#case)
+
+## Obligation
+
+One testable requirement taken from a regulation or from your own policy.
+
+An obligation states what you must do, such as "declare transactions above a threshold". You can link it to your templates, rules and reports to show how you meet it. Linking is optional.
+
+- **In the remittance example:** an obligation to declare transfers at or above the declaration threshold is linked to the declaration threshold parameter and Rule 1.
+- **In the product:** the regulatory compliance area (preview)
+- **French:** *obligation*
+- **Synonyms:** requirement
+- **Related:** [Change package](#change-package) · [Traceability](#traceability)
+
+## Org unit
+
+A part of your own organization, such as a country, legal entity or branch.
+
+Org units decide who sees what and which entity a report is filed for. They describe your structure, not your customers.
+
+- **In the remittance example:** Teranga Transfer works with a single org unit, the company itself.
+- **In the product:** your organization's structure (no separate screen)
+- **French:** *unité organisationnelle*
+- **Synonyms:** branch, business unit
+- **Related:** [Obligation](#obligation)
+
+## Parameter
+
+A threshold or setting you choose for a template, which your rules then use.
+
+A parameter keeps the number out of the rule itself. Change the parameter once and every rule that uses it follows. A threshold you can set is the most common kind.
+
+- **In the remittance example:** the _Declaration threshold_ parameter is 5,000,000 XOF; a fictional instruction later lowers it to 4,000,000 XOF.
+- **In the product:** Preview. **Settings** › **Configuration** › **Templates**, template summary (Parameters)
+- **French:** *paramètre*
+- **Synonyms:** threshold, setting
+- **Related:** [Rule](#rule) · [Template](#template) · [Change package](#change-package)
+
+## Pattern
+
+A ready-made check that looks across history, such as counting transfers in a time window.
+
+Patterns are provided by Skaletek. You use them in your rules and set their values; you do not build or change them.
+
+- **In the remittance example:** Rule 1 uses a pattern to count transfers to the same recipient within 7 days, and how many different senders made them.
+- **In the product:** Preview. The patterns library used in rule conditions (no separate screen)
+- **French:** *motif de détection*
+- **Synonyms:** detection pattern
+- **Related:** [Rule](#rule) · [Parameter](#parameter)
+
+## Politically exposed person (PEP)
+
+A person who holds or held a prominent public role, or a close family member or associate of one.
+
+Being a PEP is not wrongdoing. It raises the risk of corruption, so regulation requires enhanced due diligence. Screening finds PEPs the same way it finds sanctioned persons.
+
+- **In the remittance example:** no one in the example is a PEP. A PEP match on a sender would be reviewed like Moussa's sanctions match.
+- **In the product:** **Screening**
+- **French:** *personne politiquement exposée (PPE)*
+- **Synonyms:** PEP
+- **Related:** [Enhanced due diligence (EDD)](#enhanced-due-diligence-edd) · [Sanctions screening](#sanctions-screening)
+
+## Quarantine
+
+Where an event is held when it cannot be accepted, for example because required information is missing.
+
+A quarantined event is kept, not lost, and is not checked by rules. You can correct and retry it, or dismiss it.
+
+- **In the remittance example:** a transfer sent without its recipient's details would wait in quarantine until Teranga's team fixes and resends it.
+- **In the product:** **Data** › **Transactions & Events**, **Quarantined** tab
+- **French:** *quarantaine*
+- **Synonyms:** rejected events
+- **Related:** [Event](#event) · [Template](#template)
+
+## Risk-based approach
+
+Putting more effort where the risk is higher and less where it is lower.
+
+Regulators expect your controls to match your actual risks: your customers, products, channels and countries. In Skaletek this shapes your rules, thresholds, screening and due diligence.
+
+- **In the remittance example:** Teranga focuses Rule 1 on many senders paying one recipient just under the threshold, a known risk for cash payouts.
+- **French:** *approche fondée sur les risques*
+- **Synonyms:** risk-based approach (RBA)
+- **Related:** [Customer due diligence (CDD)](#customer-due-diligence-cdd) · [Transaction monitoring](#transaction-monitoring)
+
+## Role
+
+A party or part of an event, as named in its template.
+
+Roles give structure to an event, such as the sender, the recipient and the transfer itself. Do not confuse them with user roles, which set what your colleagues can do.
+
+- **In the remittance example:** the *Remittance transfer* template has the roles sender, recipient, payout agent and transaction.
+- **In the product:** **Settings** › **Configuration** › **Templates**, **Roles** tab
+- **French:** *rôle*
+- **Synonyms:** party
+- **Related:** [Template](#template) · [Entity (customer profile)](#entity-customer-profile)
+
+## Rule
+
+A condition Skaletek checks on your events; when it is true, the rule's actions are carried out.
+
+A rule can look at one event or at history through a pattern. It runs before the transaction completes (real time), just after (near real time, the default) or on a schedule. A new rule starts as a draft, then runs in shadow mode or live.
+
+- **In the remittance example:** Rule 1 flags at least 3 transfers to one recipient within 7 days, from at least 2 senders, each between 90% and 100% of the declaration threshold.
+- **In the product:** **Settings** › **Configuration** › **Rules**
+- **French:** *règle*
+- **Synonyms:** scenario, detection rule
+- **Related:** [Action](#action) · [Pattern](#pattern) · [Parameter](#parameter) · [Shadow mode](#shadow-mode)
+
+## Sanctions screening
+
+Checking people and businesses against sanctions and other watchlists.
+
+Screening runs at onboarding, when a profile changes and on a schedule. Each possible hit becomes a screening match for a person to review.
+
+- **In the remittance example:** screening finds that Moussa Ndiaye nearly matches an entry on the sample sanctions list.
+- **In the product:** **Screening**
+- **French:** *criblage des sanctions*
+- **Synonyms:** screening, name screening, watchlist screening
+- **Related:** [Screening match](#screening-match) · [List](#list) · [Politically exposed person (PEP)](#politically-exposed-person-pep)
+
+## Screening match
+
+A possible hit found by screening, which a person reviews and confirms or clears.
+
+A match shows your customer and the list entry side by side. It stays pending until someone records a disposition.
+
+- **In the remittance example:** Moussa's near match compares his details with the fictional list entry.
+- **In the product:** **Screening**
+- **French:** *correspondance de criblage*
+- **Synonyms:** hit, potential match
+- **Related:** [Disposition](#disposition) · [False positive](#false-positive) · [True match](#true-match)
+
+## Severity
+
+How serious an alert is: low, medium, high or critical.
+
+Severity sets how quickly the alert should be reviewed. Your organization sets the response time for each level.
+
+- **In the remittance example:** Rule 1 raises its alert with high severity.
+- **In the product:** **Alerts**
+- **French:** *gravité*
+- **Synonyms:** priority
+- **Related:** [Alert](#alert) · [Rule](#rule)
+
+## Shadow mode
+
+A way to run a rule on real activity without raising alerts or taking actions, so you can test it safely.
+
+In shadow mode, Skaletek records what the rule would have done. When the results look right, you switch the rule to live mode and its actions run. Rules from starter packs, change packages and the AI assistant start in shadow mode.
+
+- **In the remittance example:** the starter pack installs Rule 1 in shadow mode; Teranga switches it to live once it has checked the results.
+- **In the product:** Preview. A rule setting (no separate screen)
+- **French:** *mode observation*
+- **Synonyms:** silent mode, test mode
+- **Related:** [Rule](#rule) · [Test on past data (simulation)](#test-on-past-data-simulation) · [Change package](#change-package)
+
+## Starter pack
+
+A ready-made set of templates, rules, reports and sample data for one type of business.
+
+You install a starter pack in a few clicks and then adjust it. The templates and rules become yours to change.
+
+- **In the remittance example:** Teranga installs the _Remittance / money transfer_ starter pack, which brings the *Remittance transfer* template, Rule 1 and the STR report.
+- **In the product:** sign-up and set-up (preview)
+- **French:** *pack de démarrage*
+- **Synonyms:** pack, industry pack
+- **Related:** [Template](#template) · [Rule](#rule) · [Shadow mode](#shadow-mode)
+
+## STR vs SAR
+
+STR and SAR name the same report; the term depends on the country.
+
+Suspicious transaction report (STR) is used in most of Africa, Europe and Asia. Suspicious activity report (SAR) is used in the United States and the United Kingdom. In French-speaking countries the report is the *déclaration de soupçon*. These docs use STR.
+
+- **In the remittance example:** Teranga files an STR, a *déclaration de soupçon*, with CENTIF-GN.
+- **French:** *déclaration de soupçon (DOS)*
+- **Related:** [Suspicious transaction report (STR)](#suspicious-transaction-report-str) · [Cash or threshold declaration (CTR)](#cash-or-threshold-declaration-ctr)
+
+## Structuring
+
+Splitting money into smaller amounts to stay under a reporting threshold.
+
+Each amount looks ordinary alone. The pattern only shows when you look at several transfers together, across senders, days or channels.
+
+- **In the remittance example:** three senders send Moussa five transfers over six days, each under the 5,000,000 XOF threshold, totalling 24,000,000 XOF.
+- **French:** *fractionnement*
+- **Synonyms:** smurfing
+- **Related:** [Cash or threshold declaration (CTR)](#cash-or-threshold-declaration-ctr) · [Transaction monitoring](#transaction-monitoring) · [Pattern](#pattern)
+
+## Suspicious transaction report (STR)
+
+A confidential report to the financial intelligence unit when you suspect money laundering or terrorist financing.
+
+You file it after a decision that suspicion exists. Never tell the customer about it. In Skaletek, the report is drafted from the case, reviewed, approved and filed.
+
+- **In the remittance example:** report `rpt_smp_0001` is drafted from case `cas_smp_0001` and filed with CENTIF-GN.
+- **In the product:** **Data** › **Report**
+- **French:** *déclaration de soupçon (DOS)*
+- **Synonyms:** suspicious activity report (SAR)
+- **Related:** [STR vs SAR](#str-vs-sar) · [Financial intelligence unit (FIU)](#financial-intelligence-unit-fiu) · [Case](#case)
+
+## Template
+
+The definition of one kind of event: which parties are involved and what information each must carry.
+
+Events that do not fit their template go to quarantine. Templates also hold your parameters and decide what feeds the customer profile.
+
+- **In the remittance example:** the *Remittance transfer* template defines a sender, a recipient, an optional payout agent and the transfer details.
+- **In the product:** **Settings** › **Configuration** › **Templates**
+- **French:** *modèle d'événement*
+- **Synonyms:** event template, event type
+- **Related:** [Event](#event) · [Role](#role) · [Parameter](#parameter)
+
+## Test on past data (simulation)
+
+Running a draft rule or a new threshold against past events to see what it would have caught.
+
+A test changes nothing: no alerts, no labels, no messages. Use it before you activate a rule or a new parameter value.
+
+- **In the remittance example:** before lowering the threshold to the fictional 4,000,000 XOF, Teranga tests it on past transfers to see how many extra alerts it would raise.
+- **In the product:** Preview. Testing a rule or threshold on past events (no separate screen)
+- **French:** *test sur données historiques (simulation)*
+- **Synonyms:** simulation, backtest (avoid)
+- **Related:** [Shadow mode](#shadow-mode) · [Change package](#change-package)
+
+## Traceability
+
+The ability to show, for any requirement, which control meets it and what that control produced.
+
+In Skaletek, the traceability matrix links each obligation to its rules, alerts and reports. Every decision and change records who made it and when.
+
+- **In the remittance example:** Teranga shows the BCEAO the chain from the declaration threshold obligation to Rule 1, alert `alt_smp_0001`, case `cas_smp_0001` and the STR.
+- **In the product:** the regulatory compliance area, traceability matrix (preview)
+- **French:** *traçabilité*
+- **Synonyms:** audit trail
+- **Related:** [Obligation](#obligation) · [Examiner export](#examiner-export) · [Lineage](#lineage)
+
+## Transaction monitoring
+
+Checking customer activity, continuously, for signs of money laundering, fraud or other risks.
+
+Your rules check each event as it arrives, and patterns look across history. A match raises an alert for review.
+
+- **In the remittance example:** Rule 1 monitors every transfer and spots the pattern on the third transfer to Moussa.
+- **In the product:** **Settings** › **Configuration** › **Templates** and **Rules**, then **Alerts**
+- **French:** *surveillance des transactions*
+- **Synonyms:** ongoing monitoring
+- **Related:** [Rule](#rule) · [Alert](#alert) · [Structuring](#structuring)
+
+## True match
+
+A screening match where the customer is indeed the person or business on the list.
+
+You record it with **Confirm match**, and the match shows as **Confirmed match**. What follows depends on the list and your policy, such as blocking, a case or a report.
+
+- **In the remittance example:** Moussa's match is not a true match; it is cleared as a false positive.
+- **In the product:** **Screening**
+- **French:** *correspondance avérée*
+- **Synonyms:** confirmed match, true hit
+- **Related:** [False positive](#false-positive) · [Disposition](#disposition)
+
+## Webhook
+
+A message Skaletek sends to your systems when something happens, such as an alert being raised.
+
+You register the address that receives it and choose which events to send. Each message is signed so you can check it came from Skaletek.
+
+- **In the remittance example:** Teranga's own systems can receive a webhook when alert `alt_smp_0001` is raised.
+- **In the product:** **Settings** › **General Settings** › **Configurations** › **Webhook**
+- **French:** *webhook*
+- **Synonyms:** callback, notification
+- **Related:** [API key](#api-key) · [Alert](#alert)

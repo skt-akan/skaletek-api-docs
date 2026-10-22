@@ -1,0 +1,163 @@
+---
+title: "Send transfers"
+description: "Get Teranga's five transfers into the platform: upload the starter pack's Excel sample, map its columns and watch transfers arrive, or send them by API."
+type: tutorial
+tracks: [operations, configure, build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+glossary_terms: [event, template, entity]
+---
+
+import { PageMeta, ExampleNote, PreviewNotice, TryIt, KeyTakeaway, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations", "configure", "build"]} minutes={10} availability="ga" />
+
+**In this chapter:** you get transfers into the platform, either from a spreadsheet with no code or through the API.
+You map the file's columns to the _Remittance transfer_ template, then watch each transfer land on the right customer profiles. **Time:** 10 minutes.
+
+<ExampleNote />
+
+## What happens in the story
+
+Over six days, five transfers reach Moussa Ndiaye. Teranga Transfer's system records each one. The platform can only watch for patterns in transfers it receives, so every transfer must reach it, in the format the template describes.
+
+Teranga's team has no developer free yet. They start with a spreadsheet export of their transfers. Later, their developers send the same transfers through the API as they happen.
+
+## Choose how to send transfers
+
+| Situation | Method | Who |
+| --- | --- | --- |
+| You want to see the story with no data of your own | Load the starter pack's sample data | Anyone who can install packs |
+| You have transfers in a spreadsheet or an export | Upload a spreadsheet | Analyst or operations user |
+| Your system should send each transfer as it happens | Send events through the API | Developer |
+
+All three paths check each transfer against the same template and run the same rules. If you kept Load sample data checked in [chapter 1](/tutorial/sign-up-and-set-up), the five transfers are already in your trial. This chapter shows how they get there, and how you send your own.
+
+## The file: one row per transfer
+
+The remittance starter pack comes with an Excel sample built from the _Remittance transfer_ template. Download it from the template page with Download Excel sample, or from the starter pack's page. A CSV version is also available.
+
+The workbook has three sheets you use:
+
+- Instructions: how to fill in the file, the required columns and the accepted formats.
+- Data: one row per transfer, with the template's columns as headers. Required headers end with an asterisk.
+- Lists: the allowed values behind the dropdowns, such as countries, currencies and payout methods.
+
+Each header carries a note with a description and an example. Here is the first transfer of the story, in the main columns of the Data sheet:
+
+| Column | Value for `SAMPLE-REMIT-0001` |
+| --- | --- |
+| Reference | SAMPLE-REMIT-0001 |
+| Date and time * | Day 1 of the story |
+| Sender – Full name * | Aminata Sow |
+| Recipient – Full name * | Moussa Ndiaye |
+| Payout agent – Trading name | Point Marché Tilène |
+| Transaction – Amount * | 4 750 000 |
+| Transaction – Amount (currency) * | XOF (West African CFA franc) |
+| Transaction – Origin country * | France |
+| Transaction – Destination country * | Senegal |
+| Transaction – Payout method * | Cash |
+
+## Send the transfers
+
+<Tabs>
+  <Tab title="Upload a spreadsheet">
+    <PreviewNotice feature="Spreadsheet upload" />
+
+    References that start with `SAMPLE-` are reserved for sample data. You have two ways to use the file:
+
+    - **Use the sample data.** Upload the file unchanged. The platform recognises the pack's sample and offers Load the pack's sample data instead. The transfers arrive as sample data, with the Sample badge.
+    - **Use your own rows.** Replace the sample rows with your own transfers, each with your own reference. Rows that keep a `SAMPLE-` reference are rejected.
+
+    <Steps>
+      <Step title="Choose the template">
+        Go to **Transactions & Events** and choose Add events, then Upload a file. Confirm _Remittance transfer_ as the template.
+      </Step>
+      <Step title="Upload the file">
+        Drag your file onto the page or browse for it. The platform reads it and counts the rows. If you upload the same file twice, it warns you and shows the earlier import.
+      </Step>
+      <Step title="Map the columns">
+        Because the file is the template's own sample, every column is recognised: you see All columns recognised with a Review link. With your own export, the platform proposes a match for each column by its header. You confirm the likely matches and pick a column for the rest. Each mapping shows three sample values, so you can check it is right.
+
+        Values are mapped too. If your export writes the currency as "FCFA", map it once to XOF. The mapping is saved for your next file.
+      </Step>
+      <Step title="Check the rows">
+        The preview shows the first 50 rows under the template's headers, with invalid cells highlighted. The platform then checks every row of the file without importing anything. Each problem names the row and the column, so you can fix it in the file.
+      </Step>
+      <Step title="Choose an option">
+        Keep Check with rules to run your rules on each transfer, so they can raise alerts. Choose Load as history for past months you want on profiles without raising alerts.
+      </Step>
+      <Step title="Confirm">
+        Read the summary: template, rows to import, rows rejected or skipped, and the rules option. The button names the count, for example Import 5 rows.
+      </Step>
+    </Steps>
+
+    <Warning>
+    Imported events cannot be removed. A transfer that has reached the platform may already have updated profiles or raised alerts. Check the preview and the summary before you confirm.
+    </Warning>
+
+    The result page shows how many rows were accepted, rejected or skipped. It links to the imported transfers and to any alerts raised so far. You can download a result file with the outcome of every row.
+
+    <Screenshot name="events-upload-columns-recognised" alt="The upload's column step for the Remittance transfer sample: all columns recognised and grouped by sender, recipient, payout agent and transaction" />
+  </Tab>
+  <Tab title="Try it with the API">
+    Sending events through the API is generally available. Each transfer is one `POST /events` request, authenticated with your API key in the `X-API-Key` header. The body names the template and fills each of its roles.
+
+    This sketch sends the story's first transfer. It uses your own reference, because the API rejects references that start with `SAMPLE-`.
+
+    ```bash
+    curl -s -X POST "$SKALETEK_API_URL/events" \
+      -H "X-API-Key: $SKALETEK_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "template_slug": "remittance-transfer",
+        "external_ref": "TT-REMIT-0001",
+        "occurred_at": "<date and time of the transfer, ISO 8601>",
+        "roles": {
+          "sender": {"full_name": "Aminata Sow"},
+          "recipient": {"full_name": "Moussa Ndiaye"},
+          "payout_agent": {"trading_name": "Point Marché Tilène"},
+          "transaction": {
+            "amount": {"amount": 4750000, "currency": "XOF"},
+            "origin_country": "FR",
+            "destination_country": "SN",
+            "payout_method": "cash"
+          }
+        }
+      }'
+    ```
+
+    `external_ref` is your own transfer number. It must be unique, which makes retries safe. Field names are illustrative: read your template's schema for the exact names and required fields. The [Quickstart](/developers/quickstart) walks through a complete, tested request and response.
+  </Tab>
+</Tabs>
+
+## See the transfers arrive
+
+Open **Transactions & Events** and set the **Templates** filter to _Remittance transfer_. Each transfer shows its reference, amount, sender and recipient. Open one to see the profiles it is linked to: the sender, the recipient and the payout agent.
+
+With the sample data, the starter rule runs as if live. On day 3, the third transfer arrives: `SAMPLE-REMIT-0003`, 4 950 000 XOF from Cheikh Tall. Moussa has now received three transfers from three senders in three days, each between 90% and 100% of the declaration threshold. The rule raises an alert on Moussa. Chapter 7 explains it.
+
+With your own rows, the starter rules are still in shadow mode (preview). They record what they would have done, without raising live alerts, until you decide to turn them on.
+
+<TryIt>
+1. Go to **Settings** › **Configuration** › **Templates**, open _Remittance transfer_ and select Download Excel sample.
+2. Open the file and read the Instructions sheet, then find `SAMPLE-REMIT-0001` on the Data sheet.
+3. Go to **Transactions & Events**, choose Add events, then Upload a file, and upload the file unchanged. If sample data is not loaded yet, select Load the pack's sample data instead.
+4. Open **Transactions & Events** and find the five transfers to Moussa Ndiaye.
+</TryIt>
+
+<KeyTakeaway>
+A spreadsheet and the API lead to the same place: each transfer is checked against the template and linked to the right customer profiles. Start with a file today, and automate the same flow later without redoing your setup.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+Every transfer appears in the **Appearances** table on the **Details** tab of the profiles it touches. Moussa's profile now shows five incoming transfers over six days, totalling 24 000 000 XOF from three senders. Four of them are cash payouts at Point Marché Tilène.
+
+<Screenshot name="entities-profile-moussa-activity-five-transfers" alt="Moussa Ndiaye's entity page on the Details tab: his summary on the left and the Appearances table listing the five transfers he received, TT-REMIT-0001 to TT-REMIT-0005." src="/images/screenshots/entities-detail-moussa.light.en.png" />
+
+## Next
+
+- Next chapter: [An alert, explained](/tutorial/an-alert-explained)
+- Go deeper: [Getting data in](/guides/getting-data-in/overview)

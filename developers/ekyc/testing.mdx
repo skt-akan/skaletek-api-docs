@@ -1,0 +1,115 @@
+---
+title: "Test your integration"
+sidebarTitle: "Testing"
+description: "Run test verification sessions with simulated checks, get approved, pending review or rejected results on demand, and check your integration before launch."
+type: how-to
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [kyc]
+---
+
+import { PageMeta, ExampleNote } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={6} availability="ga" />
+
+Test sessions let you run the whole hosted flow without a real identity document. Every screen works as in a live session, but the checks are simulated and you choose the outcome. Use them to build and test your link delivery, your redirect page and your webhook handling.
+
+<ExampleNote />
+
+## Create a test session
+
+Add `is_demo` and `demo_expected_outcome` to the session request.
+
+```bash
+curl -s -X POST "$SKALETEK_KYC_URL/v1/applicants/$APPLICANT_ID/sessions" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workflow_template": "standard_kyc",
+    "redirect_url": "https://teranga.example.com/kyc/done",
+    "expire_in": 60,
+    "is_demo": true,
+    "demo_expected_outcome": "APPROVED",
+    "metadata": {"teranga_customer": "TT-CUST-0001"}
+  }' | jq
+```
+
+| Field | Values |
+| --- | --- |
+| `is_demo` | `true` for a test session. The default is `false`, a live session. |
+| `demo_expected_outcome` | `APPROVED` or `REJECTED`. Always set it in a test session. |
+
+The response has the same shape as for a live session. Build and open the link as usual. See [Hosted verification flow](/developers/ekyc/hosted-flow).
+
+## What is simulated
+
+| Real in a test session | Simulated in a test session |
+| --- | --- |
+| Every applicant screen, the camera and the uploads | Reading the details from the document |
+| Statuses, decisions and `GET /v1/sessions/{session_id}` | The face scan and the face comparison |
+| The eKYC Verification event and your webhook delivery | Screening |
+| The session in the dashboard under **Verifications** › **Individual** | The decision, which follows `demo_expected_outcome` |
+
+Because the decision is recorded like a live one, a test session is the way to test your webhook handler from end to end.
+
+## The test identity
+
+The simulated document is always a United States passport for a person named "Demo User". The **Check your details** screen shows this identity, whatever document the camera captured and whatever details you gave the applicant.
+
+You can photograph any test image, such as a printed sample card.
+
+<Warning>
+  Never photograph a real identity document or a real person's face in a test session. The images are stored as evidence like in a live session.
+</Warning>
+
+## Get the outcome you want
+
+| Outcome | Session request | In the flow |
+| --- | --- | --- |
+| `APPROVED` | `"demo_expected_outcome": "APPROVED"` | Choose **United States** as the **Issuing country** and **Passport** as the **Document type**. |
+| `PENDING_REVIEW` | `"demo_expected_outcome": "APPROVED"` | Choose another country or document type, for example **France** and **National ID card**. The mismatch with the test passport sends the session to review. |
+| `REJECTED` | `"demo_expected_outcome": "REJECTED"` | Complete the flow with any choices. |
+
+The issuing country is pre-filled from the applicant's `jurisdiction`. For Aminata Sow, it shows France. Change it to **United States** for a clean approval.
+
+A rejected test session returns failing reason codes, such as `FACE_MISMATCH` or `AML_SANCTIONS_MATCH`, so you can test how you handle them. See [Reason codes](/developers/ekyc/reason-codes).
+
+To test `PENDING_REVIEW` from end to end, ask a colleague with the **Review Identity Verifications** permission to approve or reject the session in the dashboard. See [Reviewing a verification](/guides/onboarding/reviewing-a-verification).
+
+To test expiry, create a test session with `"expire_in": 5` and do not finish it. Once its `expires_at` time has passed, its status is `EXPIRED`.
+
+## Keep test data apart
+
+There is no separate test environment. Test sessions run in your account, next to live ones, and they appear in the dashboard.
+
+- Create test applicants with their own `external_id` values, separate from your real customer numbers. Do not run test sessions on a real customer's applicant.
+- Mark test sessions in `metadata`, for example `{"teranga_customer": "TT-CUST-0001", "test": true}`, so your systems can recognize them.
+
+## Limits
+
+- **API-only verifications have no test mode.** Sending `is_demo` or `demo_expected_outcome` to `POST /v1/verifications/api-only` returns `422` with the error type `extra_forbidden`.
+- **Sessions per applicant are limited.** Creating many sessions for the same applicant in a short time returns `429` with the error type `rate_limited` and a `Retry-After` header, in seconds. Other applicants are not affected. When you run many tests, spread them over several test applicants, or wait for the time in `Retry-After`.
+
+See [Errors and limits](/developers/ekyc/errors-and-limits).
+
+## Before you go live
+
+- [ ] Your API key is stored on your servers only, with **Create Identity Verifications** and **View Identity Verifications**.
+- [ ] Your backend creates every applicant and session. No KYC API call comes from a browser or app.
+- [ ] You pass your customer number as `external_id`, and you update applicant details with `PATCH`, not by creating the applicant again.
+- [ ] `expire_in` fits how you deliver the link, and you create a new session when one expires.
+- [ ] Your `redirect_url` page reads the result from your backend and never trusts the visit itself.
+- [ ] Your webhook receives the eKYC Verification event and verifies its signature. See [Receiving results](/developers/ekyc/receiving-results).
+- [ ] You handle `APPROVED`, `REJECTED`, `PENDING_REVIEW` and `EXPIRED`, and treat unknown statuses as not final.
+- [ ] Your team knows who reviews `PENDING_REVIEW` sessions in the dashboard.
+- [ ] You retry on `429` after `Retry-After`, and you log the errors you receive.
+- [ ] You removed `is_demo` and `demo_expected_outcome` from live session requests.
+
+## Related
+
+- [eKYC quickstart](/developers/ekyc/quickstart)
+- [Sessions and statuses](/developers/ekyc/sessions-and-statuses)
+- [Receiving results](/developers/ekyc/receiving-results)
+- [Errors and limits](/developers/ekyc/errors-and-limits)

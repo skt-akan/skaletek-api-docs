@@ -1,0 +1,113 @@
+---
+title: "Decide and report"
+description: "The MLRO decides there is suspicion. Draft a suspicious transaction report from the case, review it, file it with CENTIF-GN and close the case."
+type: tutorial
+tracks: [operations]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+example_chapter: tutorial/decide-and-report
+glossary_terms: [suspicious-transaction-report, mlro, case, fiu]
+help_keys: [cases.decision, reports.detail]
+---
+
+import { PageMeta, ExampleNote, PreviewNotice, TryIt, KeyTakeaway, Important, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations"]} minutes={10} availability="ga" />
+
+**In this chapter** (about 10 minutes): the money laundering reporting officer (MLRO) decides there is suspicion, and Teranga Transfer files a suspicious transaction report (STR).
+You see how the decision is recorded, how the report is built from the case, and how the case closes with the report reference.
+
+<ExampleNote />
+
+## What happens in the story
+
+The analyst has worked the case from [chapter 9](/tutorial/assistant-prepares-the-case). The activity review is done. Fatou Ba and Cheikh Tall have no explained link to Moussa Ndiaye. The amounts stay just under the 5,000,000 XOF declaration threshold, and most are collected in cash at one agent.
+
+The analyst concludes that the pattern may be structuring: splitting money into amounts that avoid a declaration. The decision is not the analyst's alone. At Teranga Transfer, the MLRO decides whether there is suspicion.
+
+## Decide suspicion
+
+<PreviewNotice feature="Proposing and recording a suspicion decision in a case" />
+
+<Steps>
+  <Step title="The analyst proposes">
+    In the case, the analyst proposes a decision, with the outcome Suspicion established and the action File report. They select the evidence that supports it: the five transfers, the alert explanation and their findings. They add a short rationale.
+  </Step>
+  <Step title="The MLRO records the decision">
+    The MLRO opens the case, reads the proposal and the evidence, and records the decision. The person who proposes and the person who records must be different. Skaletek enforces it.
+  </Step>
+</Steps>
+
+<Important>
+A decision is a formal record. Skaletek stores who proposed it, who recorded it, when, the rationale and the evidence selected, with a snapshot of the case at that moment. You cannot edit a recorded decision. If the facts change, you record a new decision that replaces it, and the original stays in the history.
+</Important>
+
+The decision adds a File STR task to the checklist and starts the filing clock. The case shows how long remains before the report is due.
+
+## Draft the STR from the case
+
+Teranga files its STR with CENTIF-GN, the financial intelligence unit (FIU) set up for this example, as a _déclaration de soupçon_ (suspicion report). Go to **Data** › **Report** and select **Create report**. In **New report**, choose the STR for CENTIF-GN and select **Continue**. The new report, `rpt_smp_0001`, is linked to the case.
+
+The report arrives largely filled in from the case:
+
+| Part of the report | Where it comes from |
+| --- | --- |
+| Subject | Moussa Ndiaye and his identifiers, from the case parties |
+| Transactions | The five transfers, `SAMPLE-REMIT-0001` to `SAMPLE-REMIT-0005`, 24,000,000 XOF in total |
+| Other parties | Aminata Sow, Fatou Ba, Cheikh Tall and Point Marché Tilène |
+| Grounds for suspicion | The decision, its rationale and the selected evidence |
+| Narrative | Written by the analyst, from the case summary |
+
+Pre-filled fields are read-only and show where each value came from. If a value is wrong, you can unlock it with Edit anyway, and the change is logged with the old and new value. Fields only a person can supply, such as the narrative, are open for you to complete.
+
+The report carries a banner: "Restricted — do not disclose to the reported subject". It never appears on Moussa's own activity, and only people allowed to see filings can open it. This protects against tipping off the customer.
+
+<Screenshot name="reports-detail-str-draft" alt="The STR for Moussa Ndiaye, pre-filled from the case, with the restricted banner and the five transfers listed. Each pre-filled field shows its source, so the filer checks rather than retypes." />
+
+## Review and file
+
+The report moves through clear statuses. The action button always matches the current status.
+
+1. **Pending completion.** The preparer fills in the narrative and saves.
+2. **Pending approval.** A second person, not the preparer, checks that the report is fit to send. They select **Accept**, or **Reject** to return it with a note.
+3. **Ready for submission.** Skaletek checks the report against the template's rules and shows any error inline, before anything is sent.
+4. **Submitted.** Depending on how your organization delivers reports to CENTIF-GN, Skaletek sends the report or produces the file for you to upload. In the second case, you select **Download**, upload the file and confirm the external submission.
+5. **Acknowledged.** When CENTIF-GN acknowledges receipt, you record its reference on the report.
+
+<Warning>
+Submitting is final. Once submitted, a report is frozen. If it needs a correction, you file a new report that supersedes it, and both stay linked.
+</Warning>
+
+<Note>
+In a trial, the sample report is watermarked "SAMPLE — NOT FOR FILING" and cannot be submitted. You can complete, review and validate it to see every step.
+</Note>
+
+## Close the case
+
+With the report submitted, the analyst sets the case to **Resolved**, with the outcome Suspicion established. Skaletek checks first that the file is complete: every mandatory task done, the screening match decided, a recorded decision (preview), and the report submitted. If anything is missing, the close is refused and the case tells you what.
+
+The closed case shows the report reference `rpt_smp_0001`. Closing the case also resolves the alert from chapter 7. A final snapshot of the case is stored for the record.
+
+<TryIt>
+1. Open the case on **Moussa Ndiaye** from **Cases**.
+2. Propose a decision (preview): choose Suspicion established and File report, and select the five transfers as evidence.
+3. With a second user, record the decision.
+4. Go to **Data** › **Report**, select **Create report** and pick the STR for CENTIF-GN. Complete the narrative and validate it.
+5. Note the "SAMPLE — NOT FOR FILING" watermark: the sample report cannot be submitted.
+</TryIt>
+
+<KeyTakeaway>
+The decision and the report each have their own owner and their own check by a second person. The report is built from the case, so what you file matches what you investigated.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+Moussa's profile links to the closed case. The report itself stays hidden from his profile and visible only to people allowed to see filings.
+
+<Screenshot name="cases-workspace-closed" alt="The closed case on Moussa Ndiaye with the outcome Suspicion established and the report reference rpt_smp_0001. It shows the full path from alert to filing in one place." />
+
+## Next
+
+- Next chapter: [When the rules change](/tutorial/when-the-rules-change). A fictional instruction lowers the declaration threshold.
+- Go deeper: [Reporting](/guides/reporting/overview) and [Cases](/guides/cases/overview).

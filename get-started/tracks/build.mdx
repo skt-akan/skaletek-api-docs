@@ -1,0 +1,49 @@
+---
+title: "Build track"
+sidebarTitle: "Build"
+description: "For integration engineers and developers: where to start and the pages for API keys, sending events, handling errors and receiving webhooks."
+type: concept
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+---
+
+import { PageMeta } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={3} availability="ga" />
+
+This track is for people who connect their systems to Skaletek. You create an API key, send events, handle errors and receive notifications. Compliance terms link to the [glossary](/glossary) rather than being explained in full.
+
+## Who it is for
+
+- **Integration engineers** who set up API keys and webhooks, and fix events that Skaletek rejects.
+- **Developers** who send events from their applications and read results back through the API.
+
+## Start here
+
+<Card title="Developer quickstart" icon="rocket" href="/developers/quickstart">
+  Create an API key and send your first transfer event to Skaletek.
+</Card>
+
+## Top tasks
+
+- Create an API key and authenticate requests: [Authentication](/developers/authentication)
+- Send a first event: [Developer quickstart](/developers/quickstart)
+- Handle validation errors and other error responses: [Errors](/developers/errors)
+- Page through long lists of results: [Pagination](/developers/pagination)
+- Look up every endpoint, request and response: [API reference](/api-reference/introduction)
+- Bring data in without code, by spreadsheet: [Getting data in](/guides/getting-data-in/overview)
+- Embed onboarding for know your customer (KYC) and know your business (KYB) checks in your app: [Onboarding](/guides/onboarding/overview)
+
+## Understand what you are sending
+
+Read the [15-minute tour](/get-started/tour) to see what happens to the events you send: a rule raises an alert, an analyst investigates and a report goes to the authority.
+
+## Related
+
+- [Developer quickstart](/developers/quickstart)
+- [API reference](/api-reference/introduction)
+- [Monitoring overview](/guides/monitoring/overview)
+- [15-minute tour](/get-started/tour)
+- [Glossary](/glossary)

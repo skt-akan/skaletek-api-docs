@@ -1,72 +1,260 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Skaletek Docs",
+  "description": "Onboard, screen, monitor, investigate and report: one view of every customer, with every alert explained.",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "pages": [
-      {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    "primary": "#126DD6",
+    "light": "#5EA2EC",
+    "dark": "#126DD6"
   },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
+  "favicon": "/favicon.svg",
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:support@mintlify.com"
+        "label": "Book a demo",
+        "href": "https://skaletek.example/book-a-demo"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "Start free trial",
+      "href": "https://app.skaletek.example/signup"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Get started",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "index",
+              "get-started/360-view",
+              "get-started/tour",
+              "get-started/pick-your-track"
+            ]
+          },
+          {
+            "group": "Reading tracks",
+            "pages": [
+              "get-started/tracks/operations",
+              "get-started/tracks/configure",
+              "get-started/tracks/build"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Onboarding",
+            "pages": [
+              "guides/onboarding/overview",
+              "guides/onboarding/verifying-people",
+              "guides/onboarding/reviewing-a-verification",
+              "guides/onboarding/verification-workflows",
+              "guides/onboarding/re-verification-and-step-up"
+            ]
+          },
+          {
+            "group": "Customer 360°",
+            "pages": [
+              "guides/customer-360/overview"
+            ]
+          },
+          {
+            "group": "Screening",
+            "pages": [
+              "guides/screening/overview"
+            ]
+          },
+          {
+            "group": "Getting data in",
+            "pages": [
+              "guides/getting-data-in/overview"
+            ]
+          },
+          {
+            "group": "Monitoring",
+            "pages": [
+              "guides/monitoring/overview"
+            ]
+          },
+          {
+            "group": "Alerts",
+            "pages": [
+              "guides/alerts/overview"
+            ]
+          },
+          {
+            "group": "Cases",
+            "pages": [
+              "guides/cases/overview"
+            ]
+          },
+          {
+            "group": "Reporting",
+            "pages": [
+              "guides/reporting/overview"
+            ]
+          },
+          {
+            "group": "Regulatory compliance",
+            "pages": [
+              "guides/regulatory-compliance/overview"
+            ]
+          },
+          {
+            "group": "Dashboards & activity",
+            "pages": [
+              "guides/dashboards/overview"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "AI assistant",
+        "groups": [
+          {
+            "group": "AI assistant",
+            "pages": [
+              "ai-assistant/overview",
+              "ai-assistant/human-in-the-loop"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Tutorial",
+        "groups": [
+          {
+            "group": "Tutorial: remittance",
+            "pages": [
+              "tutorial/meet-teranga-transfer",
+              "tutorial/sign-up-and-set-up",
+              "tutorial/describe-your-transfers",
+              "tutorial/onboard-a-sender",
+              "tutorial/onboard-a-partner-agent",
+              "tutorial/screen-and-clear-a-match",
+              "tutorial/send-transfers",
+              "tutorial/an-alert-explained",
+              "tutorial/see-the-whole-picture",
+              "tutorial/assistant-prepares-the-case",
+              "tutorial/decide-and-report",
+              "tutorial/when-the-rules-change",
+              "tutorial/prove-it"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developers",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "developers/quickstart",
+              "developers/authentication"
+            ]
+          },
+          {
+            "group": "Using the API",
+            "pages": [
+              "api-reference/introduction",
+              "developers/errors",
+              "developers/pagination"
+            ]
+          },
+          {
+            "group": "Identity verification (eKYC)",
+            "pages": [
+              "developers/ekyc/overview",
+              "developers/ekyc/quickstart",
+              "developers/ekyc/hosted-flow",
+              "developers/ekyc/api-only",
+              "developers/ekyc/step-up",
+              "developers/ekyc/receiving-results",
+              "developers/ekyc/sessions-and-statuses",
+              "developers/ekyc/workflows",
+              "developers/ekyc/testing",
+              "developers/ekyc/errors-and-limits",
+              "developers/ekyc/data-and-privacy",
+              "developers/ekyc/reason-codes",
+              "developers/ekyc/flutter-sdk"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": "openapi.json"
+          },
+          {
+            "group": "KYC API",
+            "openapi": "kyc-openapi.json"
+          }
+        ]
+      },
+      {
+        "tab": "Glossary",
+        "groups": [
+          {
+            "group": "Glossary",
+            "pages": [
+              "glossary/index"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "redirects": [
+    {
+      "source": "/home/how-it-works",
+      "destination": "/guides/monitoring/overview",
+      "permanent": true
+    },
+    {
+      "source": "/home/glossary",
+      "destination": "/glossary",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/errors",
+      "destination": "/developers/errors",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/pagination",
+      "destination": "/developers/pagination",
+      "permanent": true
+    }
+  ],
+  "api": {
+    "playground": {
+      "display": "simple"
+    },
+    "examples": {
+      "languages": [
+        "curl",
+        "python",
+        "javascript",
+        "go"
+      ],
+      "defaults": "required"
     }
   },
   "contextual": {
     "options": [
       "copy",
       "view",
-      "chatgpt",
       "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+      "chatgpt"
     ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
   }
 }

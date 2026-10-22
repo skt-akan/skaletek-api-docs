@@ -5,3 +5,10 @@
 # Draft content
 drafts/
 *.draft.mdx
+
+# Internal material: never publish (SPEC-documentation §7)
+references/
+templates/
+scripts/
+CLAUDE.md
+AGENTS.md

@@ -1,0 +1,115 @@
+---
+title: "Review an identity verification"
+description: "Find identity verifications waiting for review, read the evidence, and approve, reject, escalate or ask for more, with a reason for every decision."
+type: how-to
+tracks: [operations]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+example_chapter: tutorial/onboard-a-sender
+glossary_terms: [kyc, pep]
+help_keys: [onboarding.kyc.review]
+feature_keys: [onboarding]
+---
+
+import { PageMeta, LifecycleStepper, Important } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations"]} minutes={6} availability="ga" />
+
+<LifecycleStepper current="onboard" />
+
+Some identity verifications need a person to decide. Skaletek holds them as **Pending review** until a reviewer on your team approves or rejects them. This page shows you how to find them, read the evidence and record your decision.
+
+<Note>
+You need the **Review Identity Verifications** permission to take actions. With **View Identity Verifications** only, you can open sessions but not decide.
+</Note>
+
+## Before you start
+
+Each identity verification is a **session**. A session waits for review when a check needs a human eye, such as a possible match on a sanctions or politically exposed person (PEP) list, a detail the applicant corrected, or a face match that is not clear. To learn what the applicant does and what Skaletek checks, read [How identity verification works](/guides/onboarding/verifying-people).
+
+## Review a session
+
+<Steps>
+  <Step title="Find sessions waiting for review">
+    Go to **Verifications** › **Individual**. Set the **Session Status** filter to **Pending review**, or the **Review Status** filter to **Pending**. Use **Date** and **Country** to narrow the list, and **Reload** to refresh it.
+
+    The list has these columns:
+
+    | Column | What it shows |
+    | --- | --- |
+    | NAME | The applicant's name |
+    | KYC CHECKS | Progress of the checks: **Session ongoing**, **Success** with "Cleared all checks", or **Failed** with the step that failed |
+    | REVIEW STARTED | When a reviewer first opened the session |
+    | REVIEWED | When a reviewer decided |
+    | SESSION | Where the session is: **Created**, **In progress**, **Awaiting device switch**, **Pending review**, **Approved**, **Rejected** or **Expired** |
+    | REVIEW STATUS | The review decision: **Pending**, **Approved**, **Rejected**, or a dash when no review is needed |
+  </Step>
+  <Step title="Open the session">
+    Click the applicant's name. The session opens with the person's name and the session status at the top. Opening a session is recorded in its history.
+  </Step>
+  <Step title="Read the evidence">
+    Work through the sections of the session:
+
+    | Section | What it shows |
+    | --- | --- |
+    | **Summary** | The applicant, the session status and the overall result |
+    | **Identity Document** | The document photos and the details read from them |
+    | **Liveness Check** | The selfie and face scan, and whether a live person was present |
+    | **Sessions** | The applicant's other verification sessions, newest first |
+    | **AML Summary** | Anti-money laundering (AML) screening results for **PEP watchlist**, **Sanctions lists**, **Asset freeze lists** and **Adverse media** |
+    | **Session anomaly detection** | Unusual signals in the session that are worth a closer look |
+
+    The tabs give more detail:
+
+    | Tab | What it shows |
+    | --- | --- |
+    | **Document** | The document images, front and back |
+    | **Profile** | The extracted values read from the document next to the provided values the applicant confirmed. A difference means the applicant changed a detail. |
+    | **Face match** | The selfie next to the document photo |
+    | **Transactions** | The person's transfers and other events |
+    | **Device** | The device and connection used for the session |
+    | **Location** | Where the session was completed from |
+    | **Activities** | Every action on the session, with who did it and when |
+
+    The download icon (**Download evidence bundle**) saves the session's evidence for your records.
+  </Step>
+  <Step title="Take an action">
+    Choose the action that fits what you found. The four main actions ask for a reason. Every action is recorded in **Activities** with your name and the time.
+
+    | Action | Use it when | In the dialog |
+    | --- | --- | --- |
+    | **Approve** | The evidence shows the person is who they claim to be. | **Approve Session**: choose a **Reason**, add a **Note**, then **Yes, Approve**. |
+    | **Reject** | The evidence shows the identity cannot be accepted. | **Reject Session**: "Leave a note on why this session is being rejected". Choose a **Reason**, add a **Note**, then **Yes, Reject**. |
+    | **Request document** | You need another document to decide. | **Request document**: choose the **Document**, a **Reason** and a **Note**, then **Request**. |
+    | **Escalate** | A more senior analyst should decide. | **Escalate**: choose the **Analyst**, a **Reason** and a **Note**, then **Escalate**. |
+
+    Three more actions let you correct the session without deciding yet:
+
+    - **Request new liveness** asks for a new selfie and face scan, for example when the face scan was poor.
+    - **Change document** replaces the document on the session, for example when the wrong document type was chosen.
+    - **Update information** corrects the applicant's details.
+  </Step>
+</Steps>
+
+<Important>
+Write your reason as if an examiner will read it. The reason and note stay with the session as evidence of why you decided.
+</Important>
+
+## After your decision
+
+- **In Skaletek:** the SESSION and REVIEW STATUS columns show **Approved** or **Rejected**. The session shows the decision as a badge. **Escalate** stays available.
+- **For the applicant:** while the session waits, the applicant sees **Your verification is under review**, with a note that you will share an update. Tell the applicant the outcome through your own channels. If they open their link again, they see the current result.
+- **In your systems:** the decision is recorded as an event, with who decided, and reaches your systems the same way as automatic decisions.
+
+<Accordion title="For developers" icon="code">
+  Reviewer decisions reach your systems through the same webhook and status checks as automatic decisions. See [Receiving results](/developers/ekyc/receiving-results) and the [reason codes](/developers/ekyc/reason-codes) that explain each decision.
+</Accordion>
+
+## Related
+
+- [How identity verification works](/guides/onboarding/verifying-people)
+- [Re-verification and step-up](/guides/onboarding/re-verification-and-step-up)
+- [Screening overview](/guides/screening/overview)
+- [Customer 360° overview](/guides/customer-360/overview)
+- [Onboard a sender](/tutorial/onboard-a-sender)

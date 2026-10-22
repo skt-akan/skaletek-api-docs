@@ -1,0 +1,69 @@
+---
+title: "Verification workflows"
+description: "The workflow names you pass in workflow_template, which checks each one runs, the defaults, and what happens when you pass a name that does not exist."
+type: reference
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [kyc]
+---
+
+import { PageMeta } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={4} availability="ga" />
+
+A verification workflow decides which checks run on an applicant, for example document, selfie, face scan and screening. The checks always run in the same fixed order. A workflow only turns checks on or off; it never reorders them.
+
+You choose the workflow for each verification with the `workflow_template` field. Pass the workflow's name exactly as shown below.
+
+## Workflows
+
+| Name (`workflow_template`) | Label in the dashboard | What it checks | Typical use |
+| --- | --- | --- | --- |
+| `standard_kyc` | Standard KYC | Identity document, the applicant confirms the details read from it, selfie, face scan for liveness, face match with the document photo, anti-money laundering (AML) screening and risk assessment. | Onboarding a new customer in the hosted flow. The usual choice. |
+| `full_kyc` | Full KYC | Everything in Standard KYC, plus reading the document's machine-readable zone and chip (NFC), forgery checks and a registry lookup. | Onboarding when you need a higher level of assurance. |
+| `full_kyc_with_dedup` | Full KYC with deduplication | Everything in Full KYC, plus a check that the same face has not already been verified under another applicant. | Catching people who try to sign up twice. |
+| `nfc_preferred_kyc` | NFC-first KYC | Reads the chip in the passport or ID card first, and falls back to photos of the document. Then selfie, face scan, face match, screening and risk assessment. | Customers who mostly hold chip documents and phones that can read them. |
+| `document_upload_only` | Document upload only | An uploaded identity document, the applicant confirms the details, forgery checks, screening and risk assessment. No selfie or face check. | Lower-risk products where a face check is not required. |
+| `document_reupload` | Document refresh | A new identity document, compared with the face already on file, with screening and risk assessment. No new face scan. | Replacing an expired identity document for an existing customer. |
+| `liveness_only` | Liveness only | Selfie and face scan for liveness. No document. | Checking that a real person is present, without identifying them. |
+| `liveness_step_up` | Liveness step-up | Selfie and face scan, compared with the face from the applicant's earlier verification. | Step-up verification. `POST /v1/stepup` runs it for you. See [Step-up verification](/developers/ekyc/step-up). |
+| `api_only_full` | API only | The document and selfie you upload: image quality, document type, reading the document, forgery checks, face scan for liveness, face match, screening and risk assessment. The applicant does not confirm the details. | [API-only verification](/developers/ekyc/api-only), when your own app captures the images. |
+
+## Defaults
+
+| Where you start a verification | Field | Default when you leave it out |
+| --- | --- | --- |
+| Hosted flow session, `POST /v1/applicants/{applicant_id}/sessions` | `workflow_template` | `standard_kyc` |
+| API-only verification, `POST /v1/verifications/api-only` | `workflow_template` | `api_only_full` |
+| Step-up, `POST /v1/stepup` | None | Always `liveness_step_up` |
+
+Use `api_only_full` only with API-only verification. The other workflows, except `liveness_step_up`, run in the hosted flow, where the applicant captures images on a Skaletek screen.
+
+## Unknown workflow names
+
+A name that does not exist returns `422`:
+
+```json
+{
+  "type": "workflow_not_found",
+  "message": "workflow not found: no_such_template"
+}
+```
+
+Names are case-sensitive. There is no API endpoint that lists workflows. Check the names in this table or in the dashboard.
+
+## Your own workflows
+
+Admins create and change workflows in the dashboard under **Configuration** › **Workflows**. They can start from one of the workflows above and turn checks on or off. Each workflow has a key, shown in the **KEY** column of the list. Pass that key in `workflow_template` once the workflow is **Active**.
+
+See [Verification workflows](/guides/onboarding/verification-workflows) for how to set one up.
+
+## Related
+
+- [Verification workflows (guide)](/guides/onboarding/verification-workflows)
+- [Hosted flow](/developers/ekyc/hosted-flow)
+- [API-only verification](/developers/ekyc/api-only)
+- [Step-up verification](/developers/ekyc/step-up)
+- [Reason codes and document types](/developers/ekyc/reason-codes)

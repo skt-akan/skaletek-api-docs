@@ -1,0 +1,87 @@
+---
+title: "Applicant data and privacy"
+description: "What Skaletek keeps about each person you verify, where personal data appears in API responses and webhooks, and how to erase an applicant's data."
+type: concept
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [kyc, webhook]
+---
+
+import { PageMeta } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={4} availability="ga" />
+
+Identity verification handles sensitive personal data: identity documents, faces and dates of birth. This page explains what Skaletek keeps, where that data shows up in your integration, and how to erase it when a person asks.
+
+
+## What Skaletek keeps
+
+For each applicant, Skaletek keeps:
+
+| Data | Examples | Where it comes from |
+| --- | --- | --- |
+| Applicant details | Name, date of birth, nationality, email, phone, address, occupation, your `external_id` | What you send with `POST /v1/applicants` or `applicant_info`, and corrections the applicant makes |
+| Identity documents | Document images, and the details read from them such as the document number and expiry date | The hosted flow, or your API-only uploads |
+| Selfies and face scans | The selfie and the face scan captures | The hosted flow and step-up, or your API-only uploads |
+| Verification results | Check results, reason codes, the decision, the risk level and reviewer actions | Skaletek's checks and your reviewers |
+| Session details | The device and approximate location used during the hosted flow | The applicant's device |
+
+Your reviewers see this data in the dashboard under **Verifications** when they review a session. Access in the dashboard follows each user's permissions.
+
+## Where personal data appears in your integration
+
+| Channel | Personal data it contains |
+| --- | --- |
+| `GET /v1/applicants/{applicant_id}` and `GET /v1/applicants` | The applicant details and the document details, as text. |
+| `GET /v1/sessions/{session_id}` and `GET /v1/verifications/{verification_id}` | None. Only IDs, statuses, the decision and reason codes. |
+| **eKYC Verification** events, in webhooks and in the monitoring API | The applicant's name, date of birth, email, nationality, and the number, type and issuing country of their identity document. |
+
+Images are never returned in eKYC API responses. Document photos, selfies and face scans stay in Skaletek, where your reviewers can see them in the dashboard.
+
+Because webhook deliveries contain personal data, secure your endpoint:
+
+- Accept deliveries only over HTTPS and [verify the signature](/developers/ekyc/receiving-results#verify-the-signature) of each one.
+- Don't write full delivery bodies to logs, or limit who can read those logs.
+- Store only the fields you need. Often the decision, the reason codes and the session ID are enough.
+
+## Erase an applicant's personal data
+
+When a person exercises their right to erasure, and you have no legal obligation to keep their data, call `DELETE /v1/applicants/{applicant_id}/data`.
+
+```bash
+curl -X DELETE "https://kyc.skaletek.example/v1/applicants/app_smp_0004/data" \
+  -H "X-API-Key: $SKALETEK_API_KEY"
+```
+
+```json
+{
+  "applicant_id": "app_smp_0004",
+  "erased": true,
+  "message": "…"
+}
+```
+
+<Warning>
+  Erasure is permanent. You can't restore the applicant's details, documents or face images afterwards, and you can't use them for a future step-up. Check your record-keeping obligations before you erase.
+</Warning>
+
+After erasure:
+
+- The applicant's personal details, document images, selfies and face data are removed.
+- Facts needed for the audit trail stay: that sessions took place, their statuses, decisions and reason codes, and that the data was erased.
+- The applicant record remains with its `erased_at` date set, so your references to `applicant_id` still resolve.
+
+This call erases the data held for identity verification. It does not remove data you already received, such as webhook deliveries you stored. To erase the person's details from events and customer profiles in Skaletek monitoring, contact Skaletek support.
+
+## How long Skaletek keeps data
+
+Retention periods follow your agreement with Skaletek and the rules of the countries you operate in. See Trust & security for how Skaletek protects your data.
+
+## Related
+
+- [Receive verification results](/developers/ekyc/receiving-results)
+- [API-only verification](/developers/ekyc/api-only)
+- [Errors and limits](/developers/ekyc/errors-and-limits)
+- [Authentication](/developers/authentication)

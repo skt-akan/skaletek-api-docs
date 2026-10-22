@@ -1,0 +1,120 @@
+---
+title: "An alert, explained"
+description: "Rule 1 raises an alert on Moussa Ndiaye. Read its explanation: the values, the time window, the transfers involved and a plain-language summary."
+type: tutorial
+tracks: [operations]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+example_chapter: tutorial/an-alert-explained
+glossary_terms: [alert, rule, parameter, structuring]
+help_keys: [alerts.explanation]
+---
+
+import { AGENT, PageMeta, ExampleNote, TryIt, KeyTakeaway, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations"]} minutes={8} availability="ga" />
+
+**In this chapter** (about 8 minutes): the third transfer to Moussa Ndiaye arrives and Rule 1 raises an alert.
+You read the explanation from top to bottom and see exactly why the alert exists, without guessing.
+
+<ExampleNote />
+
+## What happens in the story
+
+On day 3, Cheikh Tall sends 4,950,000 XOF to Moussa Ndiaye (`SAMPLE-REMIT-0003`). It is the third transfer to Moussa in three days, from a third sender. Each transfer stays under the 5,000,000 XOF declaration threshold.
+
+That is what Rule 1, _Just below the declaration threshold, many senders to one recipient_, looks for. It raises one alert on Moussa (`alt_smp_0001`), with severity **High** and category AML (anti-money laundering).
+
+An analyst at Teranga Transfer opens it. The question is simple: why did this alert fire, and is it worth a closer look?
+
+## Read the explanation
+
+Every alert carries its explanation. You do not request it or wait for it. It is built from the actual transfers and the actual evaluation of the rule, not from guesses. The same evidence appears on the transfer and on the rule, so all three pages tell the same story.
+
+<Screenshot name="alerts-explanation-open" alt="The alert on Moussa Ndiaye open on the Rule evaluation tab: four conditions met, each transfer amount within 90% to 100% of the 5,000,000 XOF threshold, three transfers and three senders in 7 days, so the rule raises a high alert." src="/images/screenshots/alerts-detail-rule-evaluation.light.en.png" />
+
+The explanation answers five questions.
+
+### What happened
+
+The top of the alert shows its title, written by the rule:
+
+> Transfers just below the declaration threshold to Moussa Ndiaye
+
+The **Summary** panel beside it gives the template, the severity **High**, the reference of the transfer that triggered the alert, and when the alert was created.
+
+The wording is neutral. It states what the data shows. It does not say that Moussa is laundering money. That judgment is yours, and it comes later, in a case.
+
+### Which conditions were met, with which values
+
+**Conditions the rule evaluated**, on the **Rule evaluation** tab, shows each condition of the rule with the value found and the limit it was compared with. All four must be met, and the graph ends in **Rule matched**.
+
+| Condition | Found | Limit | Result |
+| --- | --- | --- | --- |
+| The transfer is at least 90% of the declaration threshold | 4,950,000 XOF | 4,500,000 XOF | Met (+10%) |
+| The transfer is at most the declaration threshold | 4,950,000 XOF | 5,000,000 XOF | Met |
+| Transfers to the same recipient in the band, within 7 days | 3 | at least 3 | Met |
+| Different senders among those transfers | 3 | at least 2 | Met (+50%) |
+
+Switch between **Graph** and **Tree** to read the same conditions as a diagram or as a list.
+
+The declaration threshold is a threshold you can set, called a **parameter**. The explanation shows it by name and with its value at the time, 5,000,000 XOF. If someone changes it later, this alert still shows the value that applied when it fired.
+
+### Which time window
+
+Rule 1 looks back 7 days. On the **Evidence** tab, **Running total** draws the count of qualifying transfers across that window. The line steps up with each transfer and crosses the rule threshold of 3 at the triggering transfer.
+
+<Screenshot name="alerts-detail-evidence-running-total" alt="The Running total chart on the Evidence tab: the count of qualifying transfers to Moussa Ndiaye rises from 1 to 3 over the 7-day window and meets the rule threshold of 3 at the triggering transfer." src="/images/screenshots/alerts-detail-evidence-running-total.light.en.png" />
+
+### Which transfers
+
+The **Related Transactions** section lists the transfers that counted, with the one that triggered the alert marked:
+
+| Reference | Day | Sender | Amount (XOF) | Payout |
+| --- | --- | --- | --- | --- |
+| `SAMPLE-REMIT-0001` | 1 | Aminata Sow | 4,750,000 | Cash at Point Marché Tilène |
+| `SAMPLE-REMIT-0002` | 2 | Fatou Ba | 4,600,000 | Mobile wallet `SAMPLE-WALLET-0002` |
+| `SAMPLE-REMIT-0003` ▶ | 3 | Cheikh Tall | 4,950,000 | Cash at Point Marché Tilène |
+
+Together they total 14,300,000 XOF. Each one opens its own page, so you can check the details at the source.
+
+### Contributing factors
+
+**Entities & factors** names the data that decided the outcome: the transfer amounts, the recipient, and the Declaration threshold parameter. It also lists everyone involved in the triggering transfer: Cheikh Tall as sender, Moussa Ndiaye as recipient and Point Marché Tilène as payout agent.
+
+<Note>
+If your organization uses {AGENT} (in preview), it can restate the explanation in other words. It works only from the facts on this page and cites each one. See [AI assistant](/ai-assistant/overview).
+</Note>
+
+## Why only one alert
+
+Moussa receives two more transfers, on days 5 and 6 (`SAMPLE-REMIT-0004` and `SAMPLE-REMIT-0005`). They also fit the pattern. Rule 1 still raises no second alert, because it raises at most one alert per recipient every 7 days.
+
+The later transfers are not lost. They appear on Moussa's profile in [chapter 8](/tutorial/see-the-whole-picture), and they are gathered into the case in [chapter 9](/tutorial/assistant-prepares-the-case).
+
+<TryIt>
+1. Go to **Alerts** and open the alert on **Moussa Ndiaye**.
+2. On the **Rule evaluation** tab, read **Conditions the rule evaluated**. Find the declaration threshold and the window's start and end times.
+3. Click `SAMPLE-REMIT-0003` in **Related Transactions**. Check that the transfer page shows the same evidence.
+4. Go back and select **Profile** next to Moussa Ndiaye in **Entities & factors** to open his profile.
+</TryIt>
+
+<Accordion title="For developers" icon="code">
+The alert and its explanation are available through the API, with the same values you see on screen. Alerts can also be delivered to your systems by webhook. Start with the [Developers quickstart](/developers/quickstart) and the [API reference](/api-reference/introduction).
+</Accordion>
+
+<KeyTakeaway>
+An alert tells you why it exists: each condition, the values compared, the window, and the transfers that counted. You can check every number against its source before you decide anything.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+The alert now appears on Moussa's profile, in the **Alerts** tab.
+
+<Screenshot name="entities-profile-alerts" alt="Moussa Ndiaye's profile with the Rule 1 alert listed in the Alerts tab. The alert is part of his single view, not a separate list." />
+
+## Next
+
+- Next chapter: [See the whole picture](/tutorial/see-the-whole-picture). Open Moussa's profile and see all five transfers, three senders and one agent.
+- Go deeper: [Alerts](/guides/alerts/overview) and [Monitoring](/guides/monitoring/overview).

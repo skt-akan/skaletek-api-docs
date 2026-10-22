@@ -1,0 +1,100 @@
+---
+title: "Human in the loop"
+description: "What the AI assistant may do on its own, which decisions always need a person, and where the audit log records each assistant action and approval."
+type: concept
+tracks: [operations, configure]
+availability: preview
+tag: "Preview"
+owner: docs
+last_reviewed: 2026-10-20
+example_chapter: tutorial/assistant-prepares-the-case
+glossary_terms: [rule, shadow-mode, change-package, case, suspicious-transaction-report-str]
+---
+
+import { AGENT, PageMeta, ExampleNote, PreviewNotice, Important } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations", "configure"]} minutes={4} availability="preview" />
+
+<PreviewNotice feature={AGENT} />
+
+{AGENT} reads, gathers and drafts. People decide. This page lists what {AGENT} may do on its own, what always needs a human decision, and where the audit log records each step.
+
+## Why it matters
+
+Your supervisor holds your organization responsible for every rule, every suspicion decision and every report. An examiner may ask who decided and on what basis. With {AGENT}, the answer is always a named person, and the audit log shows what the assistant proposed and who approved it.
+
+## What {AGENT} may do on its own
+
+These actions change nothing in your configuration or your files. {AGENT} does them only within what your own permissions let you see.
+
+| Action | Example |
+| --- | --- |
+| Read your data | Open the transfers, alerts, screening results and customer profiles you can access |
+| Gather | Collect the transfers and facts linked to an alert into a case |
+| Explain | Restate an alert explanation in plain language, or explain an obligation, with citations |
+| Draft | Write a case summary, a suspicious transaction report (STR) narrative, a rule, a template or sample code |
+| Propose | Suggest tasks, a new parameter value, or a link between a rule and an obligation |
+| Test | Run a draft rule on past data so you can see what it would have caught |
+
+Every draft carries a visible marker and stays a draft until a person accepts it.
+
+## What always needs a human decision
+
+{AGENT} can prepare each of these. Only a person with the right permission can complete them.
+
+| Decision | Who decides | What {AGENT} prepares |
+| --- | --- | --- |
+| Activate a rule, or switch it from shadow mode to live | A rule author | The rule, its explanation and the results of testing on past data |
+| Accept or dismiss a change package | A reviewer with regulatory permissions | The summary of what changed and the proposed drafts |
+| Clear or confirm a screening match | An analyst with screening permissions | A side-by-side comparison of the customer and the list entry |
+| Decide whether there is suspicion, and close the case | A compliance officer or money laundering reporting officer (MLRO) | The gathered facts, the tasks and a draft summary |
+| Approve and file a report with the authority | The person allowed to sign off filings | A draft narrative and the report fields filled from the case |
+| Change users, roles, sign-in or security settings, API keys, or your plan and billing | An administrator | An explanation of how to do it; never the change itself |
+
+Accepting a change package does not activate anything either. It creates draft rules in shadow mode and draft report versions. Someone still activates them in a separate step.
+
+<Important>
+  {AGENT} never records a case decision, never files a report and never makes a rule live. If your organization requires a second reviewer for a decision, that rule applies to work {AGENT} prepared too.
+</Important>
+
+## Where each action is recorded
+
+<PreviewNotice feature="The audit log" />
+
+The audit log records every step. Entries from {AGENT} are marked as assistant-proposed, so you can tell them apart from work a person wrote.
+
+| What happened | What the audit log shows |
+| --- | --- |
+| {AGENT} drafted a rule, template or report version | The draft, who asked for it and when |
+| A person accepted, edited or rejected a draft | Who did it, when, and the version saved |
+| A rule was activated | Who activated it, the version and the time |
+| A change package was accepted or dismissed | Who decided, when, and the drafts it created |
+| {AGENT} added a summary or tasks to a case | The addition on the case timeline, and who accepted it |
+| A case decision was recorded | The person who decided, the outcome and the reason |
+| {AGENT} updated your organization profile after you confirmed | The change, the source "assistant" and who confirmed it |
+
+The case timeline and the customer profile show the same history in context. An examiner export of a case (preview) includes it.
+
+## See it in the remittance example
+
+<ExampleNote />
+
+| Step | Done by |
+| --- | --- |
+| Gather the five transfers to Moussa Ndiaye and the cleared screening match into the case | {AGENT} |
+| Propose review tasks and draft a summary citing `SAMPLE-REMIT-0001` to `SAMPLE-REMIT-0005` | {AGENT} |
+| Check the citations and edit the summary | The analyst |
+| Decide there is suspicion | The MLRO |
+| Draft the STR narrative for CENTIF-GN | {AGENT} |
+| Review, approve and file the STR (_déclaration de soupçon_) | The MLRO |
+| Accept the change package for the fictional 4,000,000 XOF threshold, then activate the new parameter value | An administrator |
+
+Each row appears in the audit log with the person or the assistant who did it.
+
+## Related
+
+- [AI assistant overview](/ai-assistant/overview): what {AGENT} can do
+- [The assistant prepares the case](/tutorial/assistant-prepares-the-case): the case step by step
+- [Decide and report](/tutorial/decide-and-report): the MLRO's decision and the STR
+- [When the rules change](/tutorial/when-the-rules-change): a change package from news to activation
+- [Glossary](/glossary): the terms used on this page

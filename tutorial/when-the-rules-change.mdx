@@ -1,0 +1,94 @@
+---
+title: "When the rules change"
+description: "A fictional instruction lowers the declaration threshold to 4,000,000 XOF. Follow it from news to change package, test on past data and activation."
+type: tutorial
+tracks: [configure]
+availability: preview
+tag: "Preview"
+owner: docs
+last_reviewed: 2026-10-20
+example_chapter: tutorial/when-the-rules-change
+glossary_terms: [obligation, change-package, parameter, shadow-mode]
+help_keys: [regulatory.change-packages]
+---
+
+import { AGENT, PageMeta, ExampleNote, PreviewNotice, TryIt, KeyTakeaway, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["configure"]} minutes={8} availability="preview" />
+
+<PreviewNotice feature="Regulatory compliance" />
+
+**In this chapter** (about 8 minutes): a new instruction lowers the declaration threshold, and Teranga Transfer updates its monitoring to match.
+You see how a regulatory change reaches you, what it proposes, how you test it on past data, and who switches it on.
+
+<ExampleNote />
+
+## What happens in the story
+
+<Note>
+The instruction in this chapter is **fictional**. It was written for this tutorial and does not exist. The threshold values are simplified for illustration; check the current texts that apply to you.
+</Note>
+
+A new (fictional) instruction from Teranga Transfer's supervisor lowers the declaration threshold from 5,000,000 XOF to 4,000,000 XOF. Rule 1 watches for transfers just below that threshold. If the threshold moves, the rule must move with it.
+
+Without help, someone has to notice the text, work out which rules depend on it and change them by hand. Here, the platform brings the change to you and proposes the update. People still decide.
+
+## The news arrives
+
+Teranga Transfer subscribed to the regulations that apply to a Senegalese money transfer company when it signed up ([chapter 1](/tutorial/sign-up-and-set-up)). So the instruction appears in the regulatory news, marked as requiring action, and in your notifications.
+
+The news item gives a short summary, the source and the date the change takes effect. {AGENT} can explain the instruction in plain language, citing the text it relies on.
+
+## The obligation is updated
+
+An **obligation** is one requirement from a regulation, stated so it can be checked. Here: transfers at or above the declaration threshold must be declared.
+
+Open the obligation in the regulatory catalog. It now shows the new version, 4,000,000 XOF, next to the previous one. Below it, the obligation lists what in your account is linked to it: the _Remittance transfer_ template's Declaration threshold parameter and Rule 1.
+
+## A change package proposes the update
+
+Because Teranga Transfer subscribes to this obligation, a **change package** opens in the list of change packages. It holds three things:
+
+- what changed in the regulation and the obligation
+- which of your templates and rules are affected
+- a proposed update: the Declaration threshold set to 4,000,000 XOF
+
+The proposal is a draft. It changes nothing live. You can accept it, dismiss it or request a revision. There is no button that activates everything at once.
+
+<Screenshot name="regulatory-change-package-open" alt="The change package for the fictional instruction: the old and new threshold side by side, the template and rule affected, and the proposed parameter value. Nothing goes live from this screen." />
+
+## Test on past data
+
+Before anything goes live, test the proposed value on past transfers. This test on past data (a simulation) replays Teranga Transfer's past transfers with the new value. It raises no alert, changes no profile and sends nothing.
+
+The result is a surprise worth knowing. With 5,000,000 XOF, Rule 1 raises one alert on the five sample transfers. With 4,000,000 XOF, it raises none. Rule 1 now looks for transfers between 3,600,000 and 4,000,000 XOF. All five transfers to Moussa, from 4,600,000 to 4,950,000 XOF, are now above the threshold rather than just below it.
+
+That is exactly the kind of impact you want to see before you switch: the new value changes which transfers are "just below", and which ones the obligation now covers directly.
+
+## An admin activates the change
+
+Accepting the change package creates the new version of the template as a draft. A tenant admin reviews it and activates it, so its status becomes **Active**. You can set the date from which the new value applies, so it matches the date the instruction enters into force.
+
+From then on, new transfers use 4,000,000 XOF. Past alerts keep the value that applied when they fired, so the alert from [chapter 7](/tutorial/an-alert-explained) still shows 5,000,000 XOF. The audit log records who accepted, who activated, when, and the old and new values.
+
+<TryIt>
+1. Open the regulatory news and open the fictional instruction.
+2. Open the linked change package and read what it proposes.
+3. Run the test on past data and compare the alert counts for 5,000,000 and 4,000,000 XOF.
+4. Accept the change package, then, as an admin, activate the new template version.
+</TryIt>
+
+<KeyTakeaway>
+A regulatory change arrives as a proposal linked to the rules it affects. You see its impact on past data before it goes live, and only a person can activate it.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+Moussa's profile does not change: his past alert and case keep the threshold that applied at the time. What changes is how the next transfer to him is judged.
+
+<Screenshot name="alerts-explanation-parameter-history" alt="The alert on Moussa Ndiaye still showing the Declaration threshold at 5,000,000 XOF after the change. Past decisions stay explained by the rules in force at the time." />
+
+## Next
+
+- Next chapter: [Prove it](/tutorial/prove-it). Show an examiner the path from regulation to report.
+- Go deeper: [Regulatory compliance](/guides/regulatory-compliance/overview) and [Monitoring](/guides/monitoring/overview).

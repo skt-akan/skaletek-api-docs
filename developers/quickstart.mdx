@@ -1,0 +1,455 @@
+---
+title: "Send your first remittance event"
+sidebarTitle: "Quickstart"
+description: "Send three remittance transfers through the API, add a rule that watches for them and read the alert it raises, with its explanation."
+type: tutorial
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+example_chapter: tutorial/send-transfers
+glossary_terms: [event, template, rule, parameter, alert]
+---
+
+import { PageMeta, ExampleNote } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={15} availability="ga" />
+
+This guide takes you from an API key to a first alert with its explanation. You play the
+developer at Teranga Transfer, a money transfer company in Senegal. You add a rule that looks
+for transfers just below the declaration threshold, send three transfers to the same recipient
+and read the alert the rule raises.
+
+<ExampleNote />
+
+## Before you begin
+
+You need two things from your dashboard:
+
+- **An API key** with the permissions `templates:read`, `rules:write`, `events:write` and
+  `alerts:read`. In the dashboard these are **View Templates**, **Manage Rules**,
+  **Submit Events** and **View Alerts**, under **Settings** › **API keys** › **Create keys**.
+  See [Authentication](/developers/authentication).
+- **An active _Remittance transfer_ template** with the slug `remittance-transfer`. It has four
+  roles: `sender` and `recipient` (people), `payout_agent` (an organization, optional for
+  wallet payouts) and `transaction`. It also holds the **Declaration threshold** parameter,
+  set to 5,000,000 XOF (West African CFA franc).
+
+You also need `curl` and [`jq`](https://jqlang.github.io/jq/).
+
+Set your base URL and key once so the commands below work as written.
+
+```bash
+export SKALETEK_API_URL="https://api.skaletek.example/api/v1"
+export SKALETEK_API_KEY="your-api-key"
+```
+
+## 1. Find the template
+
+List your templates and keep the ID of `remittance-transfer`.
+
+```bash
+export TEMPLATE_ID=$(curl -s "$SKALETEK_API_URL/templates?q=remittance-transfer" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  | jq -r '.data[] | select(.slug == "remittance-transfer") | .id')
+echo "$TEMPLATE_ID"
+```
+
+A template defines what a valid event looks like. Its schema is a JSON Schema document. This
+command reduces it to the roles and the fields each one requires.
+
+```bash
+curl -s "$SKALETEK_API_URL/templates/$TEMPLATE_ID/schema" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  | jq '.schema.properties.roles.properties | map_values(.required // [])'
+```
+
+```json
+{
+  "payout_agent": [],
+  "recipient": [],
+  "sender": [],
+  "transaction": [
+    "amount",
+    "origin_country",
+    "destination_country",
+    "payout_method"
+  ]
+}
+```
+
+The template also carries the value of the declaration threshold. Rules read it as
+`params.declaration_threshold`.
+
+```bash
+curl -s "$SKALETEK_API_URL/templates/$TEMPLATE_ID" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  | jq '.parameter_values'
+```
+
+```json
+{
+  "declaration_threshold": {
+    "amount": "5000000",
+    "currency": "XOF"
+  }
+}
+```
+
+## 2. Add the rule
+
+Teranga Transfer wants to know when one recipient receives several transfers from different
+senders, each just under the declaration threshold. This is Rule 1 of the example: at least 3
+transfers to the same recipient within 7 days, from at least 2 senders, each between 90% and
+100% of the declaration threshold.
+
+A rule is an expression evaluated against each event. Fields are addressed as
+`.<role>.<field>`, and `aggregate(...)` looks back over earlier events of the same recipient.
+Keep the expression in a shell variable so it stays readable.
+
+```bash
+RULE_EXPRESSION=$(cat <<'EXPR'
+.transaction.amount.amount >= params.declaration_threshold.amount * 0.9
+and .transaction.amount.amount <= params.declaration_threshold.amount
+and aggregate({measure: "count", entity: "recipient", window: "7d",
+  where: ".transaction.amount.amount >= params.declaration_threshold.amount * 0.9 and .transaction.amount.amount <= params.declaration_threshold.amount"}) >= 3
+and aggregate({measure: "distinct", field: "sender", entity: "recipient", window: "7d",
+  where: ".transaction.amount.amount >= params.declaration_threshold.amount * 0.9 and .transaction.amount.amount <= params.declaration_threshold.amount"}) >= 2
+EXPR
+)
+```
+
+The first two lines test the current transfer. The `count` line counts the recipient's
+transfers in the band over 7 days, including this one. The `distinct` line counts the different
+senders of those transfers.
+
+Create the rule. The alert action raises a high-severity alert about the recipient. The
+cooldown allows at most one alert per recipient every 7 days.
+
+```bash
+jq -n --arg template_id "$TEMPLATE_ID" --arg expression "$RULE_EXPRESSION" '{
+  template_id: $template_id,
+  key: "near_threshold_many_senders",
+  name: {en: "Just below the declaration threshold, many senders to one recipient"},
+  expression: $expression,
+  status: "active",
+  mode: "live",
+  tags: ["aml"],
+  cooldown: {duration: "7d", group_by: [".recipient.id_document.document_number"]},
+  actions: [{
+    type: "alert",
+    severity: "high",
+    subject_role_name: "recipient",
+    title: {en: "Transfers just below the declaration threshold to {.recipient.full_name}"}
+  }]
+}' | curl -s -X POST "$SKALETEK_API_URL/rules" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @- | jq '{id, key, status, mode, cooldown}'
+```
+
+```json
+{
+  "id": "rul_smp_0001",
+  "key": "near_threshold_many_senders",
+  "status": "active",
+  "mode": "live",
+  "cooldown": {
+    "duration": "7d",
+    "group_by": [
+      ".recipient.id_document.document_number"
+    ]
+  }
+}
+```
+
+<Note>
+  A rule is created as a `draft` unless you set `status` to `active`, and draft rules are not
+  evaluated. The `key` is a stable identifier for the rule: it is set once and cannot be
+  changed. To check an expression before you save it, send it to
+  `POST /rules/validate-expression`.
+</Note>
+
+<Tip>
+  Add the rule before you send the transfers it should count. A rule added later can take up to
+  an hour to take earlier transfers into account.
+</Tip>
+
+## 3. Send the first transfer
+
+On day 1, Aminata Sow sends 4,750,000 XOF from Lyon to her brother Moussa Ndiaye in Dakar. He
+collects it in cash at Point Marché Tilène, a partner agent.
+
+Each event needs an `occurred_at` time. To spread the three transfers over three days ending
+four days ago, compute the times once:
+
+```bash
+export DAY1=$(jq -nr 'now - 6*86400 | todate')
+export DAY2=$(jq -nr 'now - 5*86400 | todate')
+export DAY3=$(jq -nr 'now - 4*86400 | todate')
+```
+
+Send the transfer. `external_ref` is your own identifier for the event, and `roles` holds the
+data for each role in the template. Money amounts are decimal strings with a currency.
+
+```bash
+curl -s -X POST "$SKALETEK_API_URL/events" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @- <<JSON | jq
+{
+  "template_slug": "remittance-transfer",
+  "external_ref": "TT-REMIT-0001",
+  "occurred_at": "$DAY1",
+  "roles": {
+    "sender": {
+      "full_name": "Aminata Sow",
+      "email": "aminata.sow@example.com",
+      "id_document": {"document_type": "passport", "document_number": "SAMPLE-P-0001"},
+      "address": {"city": "Lyon", "country": "FR"}
+    },
+    "recipient": {
+      "full_name": "Moussa Ndiaye",
+      "id_document": {"document_type": "national_id", "document_number": "SAMPLE-CNI-0002"},
+      "address": {"city": "Dakar", "country": "SN"}
+    },
+    "payout_agent": {
+      "legal_name": "Point Marché Tilène",
+      "registration_number": "SAMPLE-RCCM-0005",
+      "tax_id": "SAMPLE-NINEA-0005",
+      "address": {"city": "Dakar", "country": "SN"}
+    },
+    "transaction": {
+      "amount": {"amount": "4750000", "currency": "XOF"},
+      "origin_country": "FR",
+      "destination_country": "SN",
+      "payout_method": "cash"
+    }
+  }
+}
+JSON
+```
+
+A `validation_status` of `valid` means the event matched the template and was accepted.
+
+```json
+{
+  "decision": {
+    "actions_applied": [
+      {
+        "rule_id": "rul_smp_0000",
+        "rule_key": "default_handling",
+        "type": "change_status"
+      }
+    ],
+    "alerts_created": [],
+    "blocked": false,
+    "event_status": "approved",
+    "execution_tier": "real_time"
+  },
+  "event_status": "pending",
+  "external_ref": "TT-REMIT-0001",
+  "id": "evt_smp_0001",
+  "realtime": {
+    "status": "completed"
+  },
+  "received_at": "2026-10-20T14:56:25Z",
+  "validation_errors": [],
+  "validation_status": "valid"
+}
+```
+
+`decision` is the outcome of the rules that run while the request is in flight. Every template
+comes with a `default_handling` rule, which is the one that ran here. Your rule runs a moment
+later, in the background, so its alerts are never part of this response.
+
+<Note>
+  `external_ref` must be unique within a template. If you send the same one again, the event is
+  not processed a second time: the response has a `validation_status` of `quarantined` with the
+  reason `duplicate event`. This makes it safe to retry a request that timed out.
+</Note>
+
+## 4. Send two more transfers
+
+On day 2, Fatou Ba sends 4,600,000 XOF from Milan to Moussa's mobile wallet. There is no payout
+agent for a wallet payout, so the event has no `payout_agent` role.
+
+```bash
+curl -s -X POST "$SKALETEK_API_URL/events" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @- <<JSON | jq '{id, external_ref, validation_status}'
+{
+  "template_slug": "remittance-transfer",
+  "external_ref": "TT-REMIT-0002",
+  "occurred_at": "$DAY2",
+  "roles": {
+    "sender": {
+      "full_name": "Fatou Ba",
+      "email": "fatou.ba@example.com",
+      "id_document": {"document_type": "passport", "document_number": "SAMPLE-P-0003"},
+      "address": {"city": "Milan", "country": "IT"}
+    },
+    "recipient": {
+      "full_name": "Moussa Ndiaye",
+      "id_document": {"document_type": "national_id", "document_number": "SAMPLE-CNI-0002"},
+      "address": {"city": "Dakar", "country": "SN"}
+    },
+    "transaction": {
+      "amount": {"amount": "4600000", "currency": "XOF"},
+      "origin_country": "IT",
+      "destination_country": "SN",
+      "payout_method": "mobile_wallet",
+      "wallet_number": "SAMPLE-WALLET-0002"
+    }
+  }
+}
+JSON
+```
+
+On day 3, Cheikh Tall sends 4,950,000 XOF from Paris, paid in cash at Point Marché Tilène.
+
+```bash
+curl -s -X POST "$SKALETEK_API_URL/events" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @- <<JSON | jq '{id, external_ref, validation_status}'
+{
+  "template_slug": "remittance-transfer",
+  "external_ref": "TT-REMIT-0003",
+  "occurred_at": "$DAY3",
+  "roles": {
+    "sender": {
+      "full_name": "Cheikh Tall",
+      "email": "cheikh.tall@example.com",
+      "id_document": {"document_type": "passport", "document_number": "SAMPLE-P-0004"},
+      "address": {"city": "Paris", "country": "FR"}
+    },
+    "recipient": {
+      "full_name": "Moussa Ndiaye",
+      "id_document": {"document_type": "national_id", "document_number": "SAMPLE-CNI-0002"},
+      "address": {"city": "Dakar", "country": "SN"}
+    },
+    "payout_agent": {
+      "legal_name": "Point Marché Tilène",
+      "registration_number": "SAMPLE-RCCM-0005",
+      "tax_id": "SAMPLE-NINEA-0005",
+      "address": {"city": "Dakar", "country": "SN"}
+    },
+    "transaction": {
+      "amount": {"amount": "4950000", "currency": "XOF"},
+      "origin_country": "FR",
+      "destination_country": "SN",
+      "payout_method": "cash"
+    }
+  }
+}
+JSON
+```
+
+```json
+{
+  "id": "evt_smp_0003",
+  "external_ref": "TT-REMIT-0003",
+  "validation_status": "valid"
+}
+```
+
+This is the third transfer to Moussa in three days, from a third sender, and each one is between
+4,500,000 and 5,000,000 XOF. Your rule matches.
+
+## 5. Read the alert
+
+List the alerts for your template. If the list is empty, wait a few seconds and try again.
+
+```bash
+curl -s "$SKALETEK_API_URL/alerts?template_id=$TEMPLATE_ID" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  | jq '.data[] | {id: .alert.id, title: .alert.title.en, priority: .alert.priority,
+         rule_key: .alert.rule_key, status, entity: .entity.full_name}'
+```
+
+You see one open alert about Moussa Ndiaye, raised by your rule. The title is filled in from
+the transfer.
+
+```json
+{
+  "id": "alt_smp_0001",
+  "title": "Transfers just below the declaration threshold to Moussa Ndiaye",
+  "priority": "high",
+  "rule_key": "near_threshold_many_senders",
+  "status": "open",
+  "entity": "Moussa Ndiaye"
+}
+```
+
+Every alert carries its explanation. Keep the alert's ID and read the explanation.
+
+```bash
+export ALERT_ID=$(curl -s "$SKALETEK_API_URL/alerts?template_id=$TEMPLATE_ID" \
+  -H "X-API-Key: $SKALETEK_API_KEY" | jq -r '.data[0].alert.id')
+
+curl -s "$SKALETEK_API_URL/alerts/$ALERT_ID/evidence" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  | jq '{title: .title.en, trigger_event: .trigger_event.external_ref, summary,
+         conditions: [.why_raised.conditions[] | {label: .label.en, detail, passed}]}'
+```
+
+The explanation names the transfer that raised the alert and shows each condition of the rule
+with the value it was tested against.
+
+```json
+{
+  "title": "Transfers just below the declaration threshold to Moussa Ndiaye",
+  "trigger_event": "TT-REMIT-0003",
+  "summary": "Events: 3 over 7 days (3 of 3 events matched). Distinct values: 3 over 7 days (3 of 3 events matched).",
+  "conditions": [
+    {
+      "label": "Transaction > Amount > Amount is at least Declaration threshold > Amount (5000000) * 0.9",
+      "detail": "actual: 4950000; compared with: 4500000 (+10%)",
+      "passed": true
+    },
+    {
+      "label": "Transaction > Amount > Amount is at most Declaration threshold > Amount (5000000)",
+      "detail": "actual: 4950000; compared with: 5000000 (-1%)",
+      "passed": true
+    },
+    {
+      "label": "3 or more events for recipient within 7d",
+      "detail": "Events: 3 over 7 days (3 of 3 events matched).",
+      "passed": true
+    },
+    {
+      "label": "2 or more distinct sender per recipient within 7d",
+      "detail": "Distinct values: 3 over 7 days (3 of 3 events matched).",
+      "passed": true
+    }
+  ]
+}
+```
+
+Read it from top to bottom. TT-REMIT-0003 is 4,950,000 XOF, within the band of 4,500,000 to
+5,000,000 XOF. Moussa received 3 transfers in that band within 7 days, from 3 different
+senders. The response also holds `evaluation_values`, the parameter values used, and
+`pattern_insights`, which lists the transfers that were counted. The response is trimmed here to
+the fields that matter for this guide.
+
+The cooldown you set stops the rule from raising a second alert about Moussa for 7 days. Later
+transfers to him still appear on his profile.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="An alert, explained" icon="magnifying-glass" href="/tutorial/an-alert-explained">
+    See the same alert and its explanation in the dashboard.
+  </Card>
+  <Card title="Authentication" icon="key" href="/developers/authentication">
+    Scope your API key to what your integration needs.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/developers/errors">
+    The error format and status codes.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/introduction">
+    Explore every endpoint.
+  </Card>
+</CardGroup>

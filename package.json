@@ -1,0 +1,12 @@
+{
+  "name": "skaletek-api-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "spec": "node scripts/build-spec.mjs",
+    "dev": "npx --yes mint@4.2.992 dev",
+    "check": "npx --yes mint@4.2.992 validate && npx --yes mint@4.2.992 broken-links && node scripts/check-pages.mjs",
+    "check:pages": "node scripts/check-pages.mjs",
+    "spec:kyc": "node scripts/build-kyc-spec.mjs"
+  }
+}

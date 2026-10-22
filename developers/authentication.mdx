@@ -1,0 +1,84 @@
+---
+title: "Authentication"
+description: "Authenticate every request with an API key from your dashboard."
+type: how-to
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+---
+
+The Skaletek API authenticates requests with an API key. Send it in the `X-API-Key` header on
+every request.
+
+```bash
+curl "$SKALETEK_API_URL/alerts" \
+  -H "X-API-Key: $SKALETEK_API_KEY"
+```
+
+A key belongs to one account. It can only see and change that account's data.
+
+## Get an API key
+
+Create and manage API keys in your dashboard. When you create a key, you choose its name, what
+it is allowed to do, and optionally when it expires.
+
+<Warning>
+  The full key is shown once, when it is created. Copy it into your secret manager straight
+  away. After that, the dashboard shows only the first few characters so you can tell keys apart.
+</Warning>
+
+Treat a key like a password:
+
+- Keep it on your servers. Never put it in a mobile app, a web page or a public repository.
+- Load it from an environment variable or a secret manager, not from source code.
+- Use a separate key for each system that calls the API, so you can revoke one without
+  affecting the others.
+
+## Permissions
+
+Each key carries a list of permissions. A request succeeds only if the key has the permission
+that endpoint requires. Give each key the smallest set it needs: a service that only sends
+events needs `events:write` and nothing else.
+
+| Permission | Allows |
+| --- | --- |
+| `events:write` | Send events, and retry or dismiss quarantined events |
+| `events:read` | Read events, their history and the rules they triggered |
+| `templates:read` | Read templates and their schemas |
+| `rules:read` | Read rules and their performance metrics |
+| `rules:write` | Create, change and delete rules |
+| `alerts:read` | Read alerts and their evidence |
+| `alerts:manage` | Change the status of an alert |
+| `entities:read` | Read entities and their relationships |
+| `labels:read`, `labels:manage` | Read labels, and add or remove them |
+| `lists:read`, `lists:write` | Read managed lists, and change their entries |
+| `webhooks:read`, `webhooks:write`, `webhooks:test` | Read, manage and test webhooks |
+| `screening:read`, `screening:run` | Read screening results, and run a screening |
+
+## Scope a key further
+
+Beyond permissions, a key can be narrowed further.
+
+| Restriction | Effect |
+| --- | --- |
+| Templates | The key works only with the templates you select, or with all of them. |
+| Countries | The key works only with data for the countries you select. |
+| Rate limit | The key is limited to a number of requests per second. |
+| Expiry | The key stops working after the date you set. |
+
+## Rotate a key
+
+Rotate keys on a schedule, and immediately if one may have been exposed. Rotating a key in the
+dashboard gives you a new key while the old one keeps working for a grace period of a day or a
+week. Deploy the new key within that period and nothing is interrupted.
+
+## Authentication errors
+
+| Status | Code | Meaning |
+| --- | --- | --- |
+| `401` | `UNAUTHORIZED` | The key is missing, mistyped, expired or revoked. |
+| `403` | `FORBIDDEN` | The key is valid but lacks the permission this request needs, or the template or country is outside its scope. |
+| `429` | `RATE_LIMITED` | The key has exceeded its rate limit. Slow down and retry. |
+
+See [Errors](/developers/errors) for the response format.

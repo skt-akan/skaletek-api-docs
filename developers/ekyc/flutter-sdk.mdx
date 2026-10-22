@@ -1,0 +1,302 @@
+---
+title: "Flutter SDK"
+description: "Add identity verification to a Flutter app: install the skaletek_kyc package, set up Android and iOS, start a verification and handle the result."
+type: how-to
+tracks: [build]
+availability: preview
+tag: "Preview"
+owner: docs
+last_reviewed: 2026-10-21
+---
+
+import { PageMeta, PreviewNotice, ExampleNote, Important } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={8} availability="preview" />
+
+<PreviewNotice feature="The Flutter SDK" />
+
+The `skaletek_kyc` package runs the verification flow inside your Flutter app on Android and iOS: document capture, optional NFC chip reading, the selfie and the face scan.
+
+<Warning>
+  The SDK currently works with verification sessions from the previous version of the KYC API. Support for sessions created with `POST /v1/applicants/{applicant_id}/sessions` is in progress, and this page will be updated when it ships. Until then, open the [hosted flow](/developers/ekyc/hosted-flow) in a web view for new integrations.
+</Warning>
+
+## Before you start
+
+- **Flutter** with Android and iOS targets.
+- **Android:** Kotlin 2.2.0 or later.
+- **iOS:** deployment target 14.0 or later.
+- **A session token from your backend.** Create sessions on your server with your API key. Never ship your API key inside the app.
+
+## Install the package
+
+Add the package to `pubspec.yaml`:
+
+```yaml pubspec.yaml
+dependencies:
+  skaletek_kyc: ^0.0.27
+```
+
+Then fetch it:
+
+```bash
+flutter pub get
+```
+
+## Set up Android
+
+<Steps>
+  <Step title="Set the Kotlin version">
+    Kotlin must be 2.2.0 or later. Open `android/settings.gradle` or `android/settings.gradle.kts`:
+
+    - If it has a `plugins { }` block with version numbers, set the Kotlin version there. Projects created with recent Flutter versions already declare a newer version and need no change.
+    - If it has none, add this `buildscript` block to `android/build.gradle`:
+
+    <CodeGroup>
+    ```groovy android/build.gradle
+    buildscript {
+        ext.kotlin_version = '2.2.0'
+        repositories {
+            google()
+            mavenCentral()
+        }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:8.9.1'
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        }
+    }
+    ```
+
+    ```kotlin android/build.gradle.kts
+    buildscript {
+        extra.apply {
+            set("kotlin_version", "2.2.0")
+        }
+        repositories {
+            google()
+            mavenCentral()
+        }
+        dependencies {
+            classpath("com.android.tools.build:gradle:8.9.1")
+            classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0")
+        }
+    }
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Apply the SDK's build settings">
+    Add one line at the bottom of the app-level build file, after the `android { }` and `flutter { }` blocks. It applies the SDK's minimum SDK version, library desugaring and compile SDK.
+
+    <CodeGroup>
+    ```groovy android/app/build.gradle
+    apply from: project(':skaletek_kyc').file('skaletek_kyc.gradle')
+    ```
+
+    ```kotlin android/app/build.gradle.kts
+    apply(from = project(":skaletek_kyc").file("skaletek_kyc.gradle"))
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Check permissions">
+    `INTERNET` and `CAMERA` come from the SDK's manifest and merge into your app. You have nothing to add unless you customise manifest merging.
+  </Step>
+  <Step title="Extend FlutterFragmentActivity">
+    Your `MainActivity` must extend `FlutterFragmentActivity`:
+
+    ```kotlin android/app/src/main/kotlin/com/example/app/MainActivity.kt
+    package com.example.app
+
+    import io.flutter.embedding.android.FlutterFragmentActivity
+
+    class MainActivity : FlutterFragmentActivity()
+    ```
+  </Step>
+</Steps>
+
+## Set up iOS
+
+<Steps>
+  <Step title="Set the deployment target">
+    In Xcode, select the **Runner** target, then **General** › **Minimum Deployments**, and choose iOS 14.0. Or set every `IPHONEOS_DEPLOYMENT_TARGET` in `ios/Runner.xcodeproj/project.pbxproj` (Debug, Release and Profile):
+
+    ```text
+    IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+    ```
+  </Step>
+  <Step title="Add the camera usage description">
+    Add this to `ios/Runner/Info.plist`. iOS closes the app without it.
+
+    ```xml ios/Runner/Info.plist
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs camera access to scan your document and check your face.</string>
+    ```
+  </Step>
+</Steps>
+
+## Add NFC chip reading (optional)
+
+NFC reads the chip in a passport or national ID card. It ships as a separate package, so apps that don't use it carry no NFC code or permissions.
+
+```yaml pubspec.yaml
+dependencies:
+  skaletek_kyc_nfc: ^0.0.27
+```
+
+With the package installed, passport and national ID flows offer NFC on supported devices. To hide it for one verification, pass `enableNfc: false` in `KYCCustomization`.
+
+On iOS, NFC needs three more changes. NFC only works on a real device, never in the simulator, and needs an Apple Developer account.
+
+<Steps>
+  <Step title="Add the NFC usage description">
+    ```xml ios/Runner/Info.plist
+    <key>NFCReaderUsageDescription</key>
+    <string>This app reads your document's chip to verify your identity.</string>
+    ```
+  </Step>
+  <Step title="Enable the capability">
+    Open `ios/Runner.xcworkspace` in Xcode. Select the **Runner** target, open **Signing & Capabilities**, click **+ Capability** and add **Near Field Communication Tag Reading**. Xcode creates or updates `ios/Runner/Runner.entitlements`:
+
+    ```xml ios/Runner/Runner.entitlements
+    <key>com.apple.developer.nfc.readersession.formats</key>
+    <array>
+        <string>TAG</string>
+    </array>
+    ```
+  </Step>
+  <Step title="Add the passport application identifiers">
+    Add the standard e-passport application identifiers to `ios/Runner/Info.plist`, not to the entitlements file. Without them, the NFC session starts but times out without finding the chip.
+
+    ```xml ios/Runner/Info.plist
+    <key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+    <array>
+        <string>A0000002471001</string>
+        <string>A0000002472001</string>
+        <string>00000000000000</string>
+    </array>
+    ```
+  </Step>
+</Steps>
+
+## Start a verification
+
+Call `startVerification` with the session token from your backend. The example verifies Aminata Sow, a sender of Teranga Transfer.
+
+<ExampleNote />
+
+```dart lib/verify_identity.dart
+import 'package:flutter/material.dart';
+import 'package:skaletek_kyc/skaletek_kyc.dart';
+
+Future<void> verifyIdentity(BuildContext context, String token) async {
+  await SkaletekKYC.instance.startVerification(
+    context: context,
+    // Create the session on your backend and send only the token to the app.
+    token: token,
+    userInfo: KYCUserInfo(
+      firstName: 'Aminata',
+      lastName: 'Sow',
+      documentType: DocumentType.passport.value,
+      issuingCountry: 'SEN',
+    ),
+    customization: KYCCustomization(
+      docSrc: DocumentSource.camera.value,
+      partnerName: 'Teranga Transfer',
+    ),
+    environment: SkaletekEnvironment.prod,
+    onResult: (result) {
+      // Handle the result: see "Handle the result" below.
+    },
+  );
+}
+```
+
+<Warning>
+  `environment` defaults to `SkaletekEnvironment.dev`. Set it explicitly in every build you release.
+</Warning>
+
+## Configuration reference
+
+### `KYCUserInfo`
+
+| Field | Meaning | Example |
+| --- | --- | --- |
+| `firstName` | The person's first name | `'Aminata'` |
+| `lastName` | The person's last name | `'Sow'` |
+| `documentType` | The document the person will present, from `DocumentType` | `DocumentType.passport.value` |
+| `issuingCountry` | The country that issued the document | `'SEN'` |
+
+### `KYCCustomization`
+
+| Field | Meaning | Example |
+| --- | --- | --- |
+| `docSrc` | How the person provides the document, from `DocumentSource` | `DocumentSource.camera.value` |
+| `partnerName` | Your company name, shown in the flow | `'Teranga Transfer'` |
+| `logoUrl` | Optional. Your logo | `'https://teranga.example.com/logo.png'` |
+| `primaryColor` | Optional. Your main colour | `Colors.blue` |
+| `enableNfc` | Optional. `false` hides NFC. Needs `skaletek_kyc_nfc` | `true` |
+
+### Document types
+
+| Value | Document |
+| --- | --- |
+| `DocumentType.passport` | Passport |
+| `DocumentType.nationalId` | National ID card |
+| `DocumentType.driverLicense` | Driving licence |
+| `DocumentType.residencePermit` | Residence permit |
+| `DocumentType.healthCard` | Health card |
+
+### Document sources
+
+| Value | Behaviour |
+| --- | --- |
+| `DocumentSource.camera` | Live camera capture with automatic detection |
+| `DocumentSource.file` | A file chosen from the device |
+
+### Environments
+
+| Value | Use |
+| --- | --- |
+| `SkaletekEnvironment.sandbox` | Integration testing |
+| `SkaletekEnvironment.dev` | Development (the default) |
+| `SkaletekEnvironment.prod` | Your released app |
+
+### Languages
+
+The flow is available in English, French, Spanish, German and Portuguese, with a language menu in the flow. The face scan screen follows the menu on iOS and the device language on Android.
+
+## Handle the result
+
+`onResult` receives a `KYCResult` with `success` (bool), `status` (`KYCStatus`), `message` and `errorCode`.
+
+| `KYCStatus` | Meaning | What to do |
+| --- | --- | --- |
+| `success` | The verification passed | Continue onboarding |
+| `completed` | The flow finished | Read `success` to know whether it passed |
+| `awaitReview` | The checks finished, and a person must review them | Show a "we're reviewing your details" state. This is not a failure |
+| `failure`, `reject` | The verification did not pass | Offer the person your support options |
+| `cancelled` | The person left the flow | Let them start again |
+| `inProgress`, `pending` | The verification is not finished | Wait for the final result |
+
+<Important>
+  Treat the result in the app as a hint for the screen to show. Confirm the decision on your backend before you give access, with [webhooks or polling](/developers/ekyc/receiving-results).
+</Important>
+
+The older `onComplete` callback, which receives a `Map<String, dynamic>`, still works but is deprecated and will be removed in version 1.0.0.
+
+## Troubleshooting
+
+| Problem | Fix |
+| --- | --- |
+| The NFC session times out, or the chip is not found (iOS) | Check that the three application identifiers are in `Info.plist`, not in the entitlements file |
+| "Failed to connect to NFC chip" (iOS) | Check that **Near Field Communication Tag Reading** is added under **Signing & Capabilities** and that `Runner.entitlements` lists `TAG` |
+| The chip is found but authentication fails | The document number, date of birth and expiry date must match the document exactly; the chip refuses access when they don't |
+| NFC detection is unreliable (Android) | Remove thick or metal cases, put the document on a flat surface and keep the phone still for up to 25 seconds |
+| NFC does nothing in the iOS simulator | NFC needs a real device |
+| The app closes when the camera opens (iOS) | Add `NSCameraUsageDescription` to `Info.plist` |
+
+## Related
+
+- [Hosted verification flow](/developers/ekyc/hosted-flow)
+- [Receive verification results](/developers/ekyc/receiving-results)
+- [Test your integration](/developers/ekyc/testing)
+- [eKYC overview](/developers/ekyc/overview)

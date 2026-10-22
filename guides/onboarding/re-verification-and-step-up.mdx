@@ -1,0 +1,71 @@
+---
+title: "Re-verification and step-up"
+description: "Ask a verified customer to prove it is still them with a selfie and face scan, or to replace an expired identity document, and how your team starts each."
+type: concept
+tracks: [operations, configure]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [kyc]
+help_keys: [onboarding.kyc.reverification]
+feature_keys: [onboarding]
+---
+
+import { PageMeta, LifecycleStepper, ExampleNote, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations", "configure"]} minutes={4} availability="ga" />
+
+<LifecycleStepper current="onboard" />
+
+Verifying a customer once is not always enough. Someone else may take over their account, or their identity document may expire. Skaletek gives you two ways to check again without repeating the full know your customer (KYC) verification: **step-up** and **document refresh**.
+
+| | Step-up | Document refresh |
+| --- | --- | --- |
+| Question it answers | Is the person in front of the camera the customer we verified? | Does the customer still hold a valid identity document? |
+| What the customer does | Takes a selfie and scans their face | Photographs their new identity document |
+| Workflow | Liveness step-up | Document refresh |
+| Typical trigger | A sensitive action, such as a large transfer or a change of payout details | The identity document on file has expired |
+
+## Step-up: prove it is still you
+
+A step-up asks a customer you already verified to show it is really them, right now. The customer takes a selfie and scans their face. Skaletek checks that a live person is present and compares the face with the face from their earlier, verified session. It then returns a decision, as for any verification.
+
+The customer does not photograph a document again. The flow shows only the face steps:
+
+1. **Verify your identity**, with the single step **Face liveness**.
+2. **Take a selfie**.
+3. **Get ready for your face scan**, then the face scan.
+4. The result screen.
+
+<Screenshot name="ekyc-applicant-face-scan-done" alt="Face scan step completed on a phone, the last thing the customer does in a step-up before the result screen" src="/images/screenshots/ekyc-applicant-face-scan-done.mobile.light.en.png" />
+
+Use step-up before actions where a stolen account would do the most harm. A step-up takes the customer less than a minute, so you can ask for it only when the risk justifies it.
+
+## Document refresh: replace an expired document
+
+Identity documents expire. When a customer's document is no longer valid, ask them to photograph their new one with the Document refresh workflow. Skaletek reads and checks the new document, as in their first verification.
+
+Expiry reminders (preview) can flag a document before it expires. Until you use them, decide in your own procedures when to ask for a refresh.
+
+## How your team starts them
+
+Today, your developers start a step-up or a document refresh through the API, for example when your app sees a large transfer or an expired document. Skaletek returns a link, and your app sends the customer to it. Agree with your developers on when each one is triggered, and write it down in your procedures.
+
+Step-ups and refreshes are sessions like any other. Their outcome reaches your systems in the same way, and a session that needs a closer look waits for review. See [Review an identity verification](/guides/onboarding/reviewing-a-verification).
+
+<Accordion title="For developers" icon="code">
+  Start a step-up with the step-up endpoint and send the customer to the link it returns. See [Step-up](/developers/ekyc/step-up). For a document refresh, create a session with the Document refresh workflow, as described in [Workflows](/developers/ekyc/workflows). Results arrive as described in [Receiving results](/developers/ekyc/receiving-results).
+</Accordion>
+
+## See it in the remittance example
+
+<ExampleNote />
+
+Fatou Ba lives in Milan and was verified when she joined Teranga Transfer. A few days later, she sends 4,900,000 XOF to Moussa Ndiaye, her largest transfer so far. Before paying it out, Teranga asks her for a step-up. Fatou takes a selfie and scans her face on her phone. Skaletek matches it to the face from her first verification, and the transfer goes ahead.
+
+## Related
+
+- [How identity verification works](/guides/onboarding/verifying-people)
+- [Verification workflows](/guides/onboarding/verification-workflows)
+- [Review an identity verification](/guides/onboarding/reviewing-a-verification)
+- [Onboarding overview](/guides/onboarding/overview)

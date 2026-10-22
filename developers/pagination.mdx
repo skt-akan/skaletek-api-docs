@@ -1,0 +1,54 @@
+---
+title: "Pagination"
+description: "How list endpoints page their results."
+type: reference
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+---
+
+List endpoints return a page of results in `data` and paging information in `pagination`.
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "total": 137,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+## Offset pagination
+
+Control the page with two query parameters.
+
+| Parameter | Default | Range | Description |
+| --- | --- | --- | --- |
+| `limit` | `20` | `1` to `100` | The number of results to return. |
+| `offset` | `0` | `0` or more | The number of results to skip. |
+
+```bash
+curl "$SKALETEK_API_URL/events?limit=50&offset=100" \
+  -H "X-API-Key: $SKALETEK_API_KEY"
+```
+
+To read every result, increase `offset` by `limit` until `offset` reaches `pagination.total`.
+
+## Cursor pagination
+
+Offset pagination slows down deep into a large result set. `GET /alerts` also supports cursors,
+which stay fast at any depth.
+
+When more results are available, the response includes `next_cursor`. Pass it back as the
+`cursor` query parameter to get the next page.
+
+```bash
+curl "$SKALETEK_API_URL/alerts?limit=50&cursor=$NEXT_CURSOR" \
+  -H "X-API-Key: $SKALETEK_API_KEY"
+```
+
+When you send `cursor`, `offset` is ignored and `pagination.total` is omitted. Treat the cursor
+as opaque: do not parse or build one yourself.

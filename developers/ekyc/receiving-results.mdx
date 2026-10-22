@@ -1,0 +1,240 @@
+---
+title: "Receive verification results"
+description: "Get every eKYC decision pushed to your server with a signed webhook, or poll the session, and handle verifications that go to a reviewer."
+type: how-to
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [webhook, event, template]
+---
+
+import { PageMeta, ExampleNote, Important } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={8} availability="ga" />
+
+Skaletek records every electronic know your customer (eKYC) decision as an event on the **eKYC Verification** event template. This works the same for the hosted flow, API-only verification and step-up. You can get results in two ways:
+
+| Option | How | Use it when |
+| --- | --- | --- |
+| 1. Webhook (recommended) | Skaletek sends each new **eKYC Verification** event to your HTTPS endpoint. | You want the decision as soon as it is made, with reason codes and applicant details. |
+| 2. Polling | You read the session or verification from the eKYC API. | You can't receive webhooks yet, or you want to check one session on demand. |
+
+Don't rely on the applicant's browser. **Return to partner** in the hosted flow opens your `redirect_url` without any result in it. Always read the decision on your server.
+
+<ExampleNote />
+
+## Option 1: webhook
+
+### Create the webhook
+
+<Steps>
+  <Step title="Open the webhook settings">
+    In the dashboard, go to **Settings** › **General Settings** › **Configurations** › **Webhook** and select **Create webhook**.
+  </Step>
+  <Step title="Choose the destination">
+    On **Destination**, choose **HTTPS**. Skaletek sends a signed JSON body to your own endpoint.
+  </Step>
+  <Step title="Configure the endpoint">
+    On **Configure**, enter a **Name**, for example "Teranga eKYC results", and the **Url** of your endpoint. The URL must use HTTPS, for example `https://teranga.example.com/webhooks/skaletek`.
+  </Step>
+  <Step title="Select the events">
+    On **Events**, select `event.created`. Skaletek sends it each time an event is recorded, including every **eKYC Verification** event.
+
+    `event.created` is sent only to webhooks that select it explicitly. Optionally, also select `event.status_changed` to learn when an analyst or a rule changes the status of an event in Skaletek.
+  </Step>
+</Steps>
+
+`event.created` covers all your event templates, including your transfers. Your endpoint keeps only the deliveries whose `data.event.template_slug` is `ekyc-verification`.
+
+### What a delivery contains
+
+Each delivery is a `POST` with a JSON body. This example shows the decision for Aminata Sow's onboarding, shortened:
+
+```json
+{
+  "id": "whkdlv_…",
+  "event_type": "event.created",
+  "api_version": "2026-07-20",
+  "created_at": "2026-10-21T10:55:06Z",
+  "test": false,
+  "data": {
+    "event": {
+      "id": "evt_smp_0101",
+      "template_slug": "ekyc-verification",
+      "occurred_at": "2026-10-21T10:55:05Z",
+      "roles": {
+        "applicant": {
+          "first_name": "Aminata",
+          "last_name": "Sow",
+          "full_name": "Aminata Sow",
+          "date_of_birth": "1990-04-12",
+          "email": "aminata.sow@example.com",
+          "nationality": "SN",
+          "id_document": {
+            "document_number": "SAMPLE-P-0001",
+            "document_type": "passport",
+            "issuing_country": "SN"
+          }
+        },
+        "verification": {
+          "decision": "APPROVED",
+          "event_type": "ekyc.session.approved",
+          "session_id": "ses_smp_0001",
+          "session_type": "KYC",
+          "workflow": "standard_kyc",
+          "external_applicant_id": "TT-CUST-0001",
+          "reason_codes": ["POLICY_PASSED"],
+          "risk_level": "VERY_LOW",
+          "decided_by": "SYSTEM",
+          "evidence_bundle_id": "evb_smp_0001"
+        }
+      }
+    }
+  }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `id` | The ID of this delivery. |
+| `event_type` | The webhook event type, here `event.created`. |
+| `test` | `true` for a test delivery you sent yourself. Ignore those in production. |
+| `data.event.id` | The ID of the recorded event. Use it to detect duplicate deliveries. |
+| `data.event.template_slug` | `ekyc-verification` for an eKYC result. |
+| `data.event.occurred_at` | When the decision was made. |
+| `data.event.roles.verification` | The result. See the next table. |
+| `data.event.roles.applicant` | The person's details, as described below. |
+
+The `verification` object carries the result:
+
+| Field | Meaning | Example |
+| --- | --- | --- |
+| `decision` | The decision. Branch on this field. | `APPROVED`, `REJECTED`, `PENDING_REVIEW` |
+| `event_type` | A readable name for what happened. | `ekyc.session.approved` |
+| `session_id` | The session or API-only verification the result belongs to. | `ses_smp_0001` |
+| `session_type` | The kind of session. | `KYC` (hosted flow), `API_ONLY`, `STEP_UP`, `REFRESH` (document refresh) |
+| `workflow` | The workflow that ran. | `standard_kyc` |
+| `external_applicant_id` | Your own ID for the person, as you sent it in `external_id`. | `TT-CUST-0001` |
+| `reason_codes` | Why the session got its decision. See [Reason codes](/developers/ekyc/reason-codes). | `["POLICY_PASSED"]` |
+| `risk_level` | The risk level Skaletek assigned. | `VERY_LOW` |
+| `decided_by` | `SYSTEM` for an automatic decision. Otherwise, the reviewer who decided. | `SYSTEM` |
+| `evidence_bundle_id` | The record of the checks your reviewers see in the dashboard. | `evb_smp_0001` |
+
+The `applicant` object carries the person's details: name, date of birth, email, nationality, and the number, type and issuing country of the identity document. Fields Skaletek does not have are empty or missing. In events, country codes are uppercase (`SN`), unlike the lowercase codes of the eKYC API.
+
+<Important>
+  Deliveries contain personal data. Accept them only over HTTPS, verify the signature, restrict who can read your logs, and store only the fields you need. See [Applicant data and privacy](/developers/ekyc/data-and-privacy).
+</Important>
+
+If a delivery would be too large, Skaletek leaves out `roles` and sets `"roles_truncated": true` on the event. Read the full event with the monitoring API in that case:
+
+```bash
+curl "https://api.skaletek.example/api/v1/events/evt_smp_0101/payload" \
+  -H "X-API-Key: $SKALETEK_API_KEY"
+```
+
+This call needs the `events:read` permission. The response has the same `roles` object as the delivery.
+
+### Verify the signature
+
+Skaletek signs every HTTPS delivery with a private key. You check the signature with Skaletek's public key, so nobody can forge a result. Each delivery has an `X-Skaletek-Signature` header:
+
+```text
+X-Skaletek-Signature: t=1792580106,kid=whk_key_smp_01,v1=kZ3b…
+```
+
+| Part | Meaning |
+| --- | --- |
+| `t` | When the delivery was signed, in Unix seconds. |
+| `kid` | The ID of the signing key. |
+| `v1` | The signature, Base64-encoded. |
+
+To verify a delivery:
+
+1. Read the raw request body as bytes. Don't parse and re-serialize the JSON first.
+2. Build the signed text: the value of `t`, a full stop (`.`), then the raw body.
+3. Fetch the public keys from `GET https://api.skaletek.example/api/v1/webhooks/verification-keys`. The call needs no API key. It returns a set of keys in JSON Web Key (JWK) format.
+4. Take the key whose `kid` matches the header and verify the signature over the signed text.
+5. Reject the delivery if the signature does not match, or if `t` is more than five minutes old.
+
+Cache the keys. Skaletek rotates them, and a retired key stays valid for a grace period. When a delivery names a `kid` you don't have, fetch the keys again.
+
+```javascript Node.js
+import crypto from "node:crypto";
+
+let keys = new Map();
+
+async function loadKeys() {
+  const res = await fetch("https://api.skaletek.example/api/v1/webhooks/verification-keys");
+  const { keys: jwks } = await res.json();
+  keys = new Map(jwks.map((jwk) => [jwk.kid, crypto.createPublicKey({ key: jwk, format: "jwk" })]));
+}
+
+// rawBody: the request body as a Buffer. header: the X-Skaletek-Signature value.
+export async function isValidDelivery(rawBody, header) {
+  const parts = Object.fromEntries(header.split(",").map((p) => p.split(/=(.*)/s).slice(0, 2)));
+  const age = Math.abs(Date.now() / 1000 - Number(parts.t));
+  if (!parts.t || !parts.kid || !parts.v1 || age > 300) return false;
+
+  if (!keys.has(parts.kid)) await loadKeys();
+  const key = keys.get(parts.kid);
+  if (!key) return false;
+
+  const signed = Buffer.concat([Buffer.from(`${parts.t}.`), rawBody]);
+  // The key itself defines the algorithm, so the first argument is null.
+  return crypto.verify(null, signed, key, Buffer.from(parts.v1, "base64"));
+}
+```
+
+To test your code, send a test delivery with `POST /api/v1/webhooks/{webhookId}/test`. Its `signature` option sends a valid, an invalid or a stale signature, so you can check that your endpoint rejects bad ones.
+
+### Respond fast and handle retries
+
+- **Answer with a `2xx` status within 10 seconds.** Store the delivery, respond, then process it in the background.
+- **Expect retries.** If your endpoint times out or answers with another status, Skaletek retries the delivery several times, with longer waits between attempts.
+- **Expect duplicates.** The same event can arrive more than once. Use `data.event.id` to skip an event you already processed.
+- **Keep the latest decision per session.** One session can produce more than one **eKYC Verification** event, for example `PENDING_REVIEW` and later the reviewer's decision. Key your records by `verification.session_id` and keep the decision with the latest `occurred_at`.
+
+### Handle a pending review
+
+`PENDING_REVIEW` is not a final decision. It means a check needs a person to look at it, for example a possible match on a sanctions list. A reviewer on your team opens the session under **Verifications** in the dashboard and approves or rejects it. See [Reviewing a verification](/guides/onboarding/reviewing-a-verification).
+
+When the reviewer decides, a new **eKYC Verification** event is recorded for the same `session_id`. Its `decided_by` names the reviewer instead of `SYSTEM`. Until then, keep the customer in a pending state in your system.
+
+## Option 2: polling
+
+Read the status from the eKYC API with the same API key you use to create sessions.
+
+| Kind of verification | Call | What you get |
+| --- | --- | --- |
+| Hosted flow and step-up | `GET /v1/sessions/{session_id}` | `status`, `decision`, `session_type`. No reason codes. |
+| API-only | `GET /v1/verifications/{verification_id}` | `status`, `decision`, `reason_codes`. |
+
+```bash
+curl "https://kyc.skaletek.example/v1/sessions/ses_smp_0001" \
+  -H "X-API-Key: $SKALETEK_API_KEY"
+```
+
+```json
+{
+  "id": "ses_smp_0001",
+  "applicant_id": "app_smp_0001",
+  "session_type": "KYC",
+  "status": "APPROVED",
+  "decision": "APPROVED",
+  "evidence_bundle_id": "evb_smp_0001",
+  "expires_at": "2026-10-21T11:55:00Z",
+  "created_at": "2026-10-21T10:50:00Z"
+}
+```
+
+Poll only while a session is open. Wait a few seconds between calls and back off over time. Stop when `decision` is `APPROVED` or `REJECTED`, or when the status is `EXPIRED`. For `PENDING_REVIEW`, poll less often, because a reviewer may take hours. See [Sessions and statuses](/developers/ekyc/sessions-and-statuses).
+
+## Related
+
+- [Sessions and statuses](/developers/ekyc/sessions-and-statuses)
+- [Reason codes and document types](/developers/ekyc/reason-codes)
+- [Reviewing a verification](/guides/onboarding/reviewing-a-verification)
+- [Authentication](/developers/authentication)
+- [Errors and limits](/developers/ekyc/errors-and-limits)

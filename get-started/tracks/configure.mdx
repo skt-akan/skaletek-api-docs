@@ -1,0 +1,59 @@
+---
+title: "Configure track"
+sidebarTitle: "Configure"
+description: "For rule authors, template designers and tenant admins: where to start and the pages for setting up templates, rules, thresholds and users."
+type: concept
+tracks: [configure]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+---
+
+import { PageMeta } from "/snippets/components.jsx";
+
+<PageMeta tracks={["configure"]} minutes={3} availability="ga" />
+
+This track is for people who set Skaletek up for their business. You describe your data, write and test rules, set thresholds and manage who can do what. Pages show the screens and clicks first. Where an API equivalent exists, it sits in a separate tab.
+
+## Who it is for
+
+- **Rule authors** who write rules, set thresholds and test them on past data (preview) before turning them on.
+- **Template designers** who describe each kind of event your business sends and how Skaletek recognises your customers in it.
+- **Tenant admins** who invite users, set roles and teams, and manage the organization's settings.
+
+## Start here
+
+<Steps>
+  <Step title="Describe your transfers">
+    Tutorial chapter 2, [Describe your transfers](/tutorial/describe-your-transfers), shows a ready-made event template. You see how senders and recipients become customer profiles, and how to adapt the template to your data.
+  </Step>
+  <Step title="Learn how monitoring works">
+    The [Monitoring overview](/guides/monitoring/overview) explains templates, rules and thresholds, and how they lead to an alert.
+  </Step>
+</Steps>
+
+## Top tasks
+
+### Rule author
+
+- Write a rule from a pattern, use thresholds you can set, test on past data (simulation) and in shadow mode, then activate: [Monitoring](/guides/monitoring/overview). Patterns, the parameters screen, testing on past data and shadow mode are in preview.
+- Update a threshold after a regulatory change: [When the rules change](/tutorial/when-the-rules-change) (preview)
+
+### Template designer
+
+- Describe an event type, choose roles and set how customers are recognised: [Monitoring](/guides/monitoring/overview)
+- Bring data in from a spreadsheet or other source: [Getting data in](/guides/getting-data-in/overview)
+- See how events build each customer profile: [Customer 360°](/guides/customer-360/overview)
+
+### Tenant admin
+
+- Choose the regulations your organization subscribes to: [Regulatory compliance](/guides/regulatory-compliance/overview) (preview)
+- Understand what the assistant does on its own and what always needs a person: [Human in the loop](/ai-assistant/human-in-the-loop)
+
+## Related
+
+- [Tutorial: Describe your transfers](/tutorial/describe-your-transfers)
+- [Monitoring overview](/guides/monitoring/overview)
+- [Reporting overview](/guides/reporting/overview)
+- [15-minute tour](/get-started/tour)
+- [Glossary](/glossary)

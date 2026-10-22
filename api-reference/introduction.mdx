@@ -1,0 +1,59 @@
+---
+title: "API overview"
+sidebarTitle: "Overview"
+description: "Base URL, request format and conventions shared by every endpoint."
+type: reference
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+---
+
+The Skaletek API is a JSON API over HTTPS. The endpoint pages in this section are generated from
+the OpenAPI specification, so they always match the schemas the API validates against.
+
+## Base URL
+
+All endpoints are served under `/api/v1`.
+
+```text
+https://api.skaletek.example/api/v1
+```
+
+<Note>
+  The host above is a placeholder. Use the base URL for your Skaletek environment.
+</Note>
+
+## Requests
+
+- Send request bodies as JSON with `Content-Type: application/json`.
+- Authenticate with an API key in the `X-API-Key` header. See [Authentication](/developers/authentication).
+- Requests are validated against the schema before they are processed. A request that does not
+  match is rejected with `400` and a message that names the offending field.
+
+## Conventions
+
+| Convention | Detail |
+| --- | --- |
+| Identifiers | UUIDs, for example `8a6b8dc5-a3db-4a35-af7e-37389019ec86`. |
+| Timestamps | ISO 8601 in UTC, for example `2026-03-28T14:00:00Z`. |
+| Monetary amounts | Decimal strings, never floats, for example `"2500.50"`. |
+| Translatable text | An object keyed by language code, for example `{"en": "Transfer", "fr": "Transfert"}`. At least one language is required. |
+| Field names | `snake_case`. |
+
+## Request IDs
+
+Every response carries an `X-Request-ID` header. If you send your own `X-Request-ID`, the API
+uses it instead of generating one. Log this value: quote it when you contact support so the
+request can be traced.
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Errors" icon="triangle-exclamation" href="/developers/errors">
+    The error format and status codes.
+  </Card>
+  <Card title="Pagination" icon="list" href="/developers/pagination">
+    How list endpoints page their results.
+  </Card>
+</CardGroup>

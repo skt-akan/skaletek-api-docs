@@ -1,0 +1,136 @@
+---
+title: "Step-up verification"
+description: "Ask a person you already verified to prove it is still them with a selfie and face scan, for example before a large transfer, and read the result."
+type: how-to
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [kyc]
+---
+
+import { PageMeta, ExampleNote } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={5} availability="ga" />
+
+Use step-up verification to check that the person using an account is the person you verified. The applicant takes a selfie and a short face scan. Skaletek compares their face with the face from their earlier verification and returns a decision.
+
+Typical moments for a step-up are a large transfer, a change of payout details, or a login from a new device. For the compliance view, see [Re-verification and step-up](/guides/onboarding/re-verification-and-step-up).
+
+<ExampleNote />
+
+In this example, Fatou Ba is about to send 4,900,000 XOF to Moussa Ndiaye. Teranga Transfer asks her to prove it is her before it releases the transfer.
+
+## Before you start
+
+- **API key:** a key with the **Create Identity Verifications** and **View Identity Verifications** permissions. See [Authentication](/developers/authentication).
+- **A verified applicant:** the person has an earlier verification with a selfie, such as an approved [hosted flow](/developers/ekyc/hosted-flow) session. You need their applicant ID.
+- **A triggering event:** the ID of the event that prompts the check, for example the transfer you sent to Skaletek monitoring.
+
+```bash
+export KYC_API_URL="https://kyc.skaletek.example"
+export SKALETEK_API_KEY="<your API key>"
+```
+
+## Steps
+
+<Steps>
+  <Step title="Create the step-up session">
+    Call `POST /v1/stepup` from your server.
+
+    ```bash
+    curl -X POST "$KYC_API_URL/v1/stepup" \
+      -H "X-API-Key: $SKALETEK_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "applicant_id": "app_smp_0003",
+        "required_steps": ["SELFIE_CAPTURE", "LIVENESS"],
+        "triggering_event_id": "evt_smp_0005",
+        "context": {"reason": "Large transfer", "transfer": "TT-REMIT-0005"},
+        "notification_channel": "NONE",
+        "ttl_minutes": 60
+      }'
+    ```
+
+    | Field | Required | Meaning |
+    | --- | --- | --- |
+    | `applicant_id` | Yes | The Skaletek ID of the person to check. |
+    | `required_steps` | Yes | Send `["SELFIE_CAPTURE", "LIVENESS"]`. A step-up always runs the selfie, the face scan and the comparison with the verified face. |
+    | `triggering_event_id` | Yes | The ID of the event that prompted the check, such as the transfer. It links the step-up to that event. |
+    | `context` | No | Your own key-value pairs, such as the reason for the check. |
+    | `notification_channel` | No | Send `NONE`: you deliver the link to the person yourself. `NONE` is the default. |
+    | `ttl_minutes` | No | How long the person has to complete the check, from 5 to 1,440 minutes. Defaults to 60. |
+
+    The response is `201 Created`:
+
+    ```json
+    {
+      "step_up_session_id": "ses_smp_0003",
+      "applicant_notification_url": "https://verify.skaletek.example/?invite=…"
+    }
+    ```
+
+    Store `step_up_session_id` with the transfer. You use it to read the result.
+  </Step>
+  <Step title="Send the person to the link">
+    Open `applicant_notification_url` for the person. Use it exactly as you received it. For example:
+
+    - redirect them to it from your web app,
+    - open it in a WebView or the system browser from your mobile app,
+    - or send it in a message you control, such as an email or a push notification.
+
+    Skaletek does not contact the person when `notification_channel` is `NONE`. Tell them why you are asking, for example "Confirm it's you to release your transfer".
+  </Step>
+  <Step title="The person completes the check">
+    The person sees the Skaletek verification app. The welcome screen lists a single step, **Face liveness**. Then they:
+
+    1. take a selfie on the **Take a selfie** screen,
+    2. start the face scan from **Get ready for your face scan**,
+    3. keep their face in the oval until the scan ends,
+    4. see the result.
+
+    They don't photograph a document again. Skaletek compares the new face with the face from their earlier verification.
+  </Step>
+  <Step title="Read the result">
+    The result arrives as an **eKYC Verification** event with the session type `STEP_UP`. Subscribe to it with a webhook, as described in [Receive verification results](/developers/ekyc/receiving-results).
+
+    You can also read the session:
+
+    ```bash
+    curl "$KYC_API_URL/v1/sessions/ses_smp_0003" \
+      -H "X-API-Key: $SKALETEK_API_KEY"
+    ```
+
+    ```json
+    {
+      "id": "ses_smp_0003",
+      "applicant_id": "app_smp_0003",
+      "session_type": "STEP_UP",
+      "status": "IN_PROGRESS",
+      "decision": null,
+      "evidence_bundle_id": null,
+      "expires_at": "2026-10-21T11:59:37Z",
+      "created_at": "2026-10-21T10:59:37Z"
+    }
+    ```
+
+    When `decision` is `APPROVED`, release the transfer. When it is `REJECTED`, keep it blocked and follow your procedure. When it is `PENDING_REVIEW`, a reviewer on your team decides in the dashboard. A session the person does not finish in time becomes `EXPIRED`. See [Sessions and statuses](/developers/ekyc/sessions-and-statuses).
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+| Response | Cause | Fix |
+| --- | --- | --- |
+| `422` with `missing` | `applicant_id`, `required_steps` or `triggering_event_id` is missing. | Add the field named in `loc`. |
+| `422` with `extra_forbidden` | The body contains a field the endpoint does not accept. | Remove the field named in `loc`. |
+| Session becomes `EXPIRED` | The person did not finish within `ttl_minutes`. | Create a new step-up session. |
+
+See [Errors and limits](/developers/ekyc/errors-and-limits) for every error.
+
+## Related
+
+- [Re-verification and step-up](/guides/onboarding/re-verification-and-step-up)
+- [Receive verification results](/developers/ekyc/receiving-results)
+- [Sessions and statuses](/developers/ekyc/sessions-and-statuses)
+- [Hosted flow](/developers/ekyc/hosted-flow)

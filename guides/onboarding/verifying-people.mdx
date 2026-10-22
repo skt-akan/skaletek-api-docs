@@ -1,0 +1,102 @@
+---
+title: "How identity verification works"
+description: "What a person does to verify their identity with Skaletek, what Skaletek checks, the possible outcomes, and where your team finds the results."
+type: concept
+tracks: [operations, configure]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+example_chapter: tutorial/onboard-a-sender
+glossary_terms: [kyc, pep, entity]
+help_keys: [onboarding.kyc]
+feature_keys: [onboarding]
+---
+
+import { PageMeta, LifecycleStepper, ExampleNote, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations", "configure"]} minutes={6} availability="ga" />
+
+<LifecycleStepper current="onboard" />
+
+Identity verification is how you confirm that a new customer is a real person who holds the identity they claim. It is the electronic part of know your customer (KYC) checks. The person photographs an identity document and scans their face. Skaletek checks both, screens the person, and returns a decision.
+
+Each attempt is a **verification session**. Your team sees every session, its evidence and its outcome under **Verifications** › **Individual**.
+
+## What the applicant does
+
+The person being verified is the **applicant**. They open a link from your app or website. The flow runs in the browser, on a phone or a computer, in English, French, Spanish, German or Portuguese.
+
+1. **Start.** The **Verify your identity** screen lists the steps still to do, such as **ID verification** and **Face liveness**. The applicant taps **Continue**.
+2. **Photograph the document.** After **Start capture**, the camera looks for the document and takes the photo when it is sharp. The applicant can also use **Capture document manually**.
+3. **Confirm the document.** The applicant checks the **Issuing country** and chooses the **Document type**, such as a passport or a national ID card. For a two-sided document, they are asked to **Flip ID over** and photograph the back.
+4. **Check the details.** On **Check your details**, the applicant sees the name, date of birth, nationality, document number and expiry date read from the document. They can correct a value, then tap **Confirm details**.
+5. **Take a selfie.** On **Take a selfie**, the applicant puts their face in the oval and takes a photo.
+6. **Scan their face.** On **Get ready for your face scan**, the applicant taps **Start verification** and holds their face in the oval for a few seconds.
+7. **See the result.** A final screen shows the outcome. **Return to partner** takes the applicant back to your app or website.
+
+<Columns cols={2}>
+  <Screenshot name="ekyc-applicant-welcome" alt="Applicant start screen on a phone: Verify your identity, with the two steps ID verification and Face liveness and a Continue button" src="/images/screenshots/ekyc-applicant-welcome.mobile.light.en.png" />
+  <Screenshot name="ekyc-applicant-check-details" alt="Check your details screen from a test session, showing a fixed test identity (Demo User): personal and document details read from the document, each with an edit button, and Confirm details" src="/images/screenshots/ekyc-applicant-check-details.mobile.light.en.png" />
+</Columns>
+
+On a computer, the start screen also offers **Scan QR code**. The applicant scans it and continues on their phone, where the camera usually gives better photos. **Continue on this computer** keeps them on the computer. The flow runs on one device at a time.
+
+If the applicant stops halfway, they can open the same link again. The flow resumes at the step where they left off and lists only the steps still to do.
+
+## What Skaletek checks
+
+Skaletek runs the checks in a fixed order. The [verification workflow](/guides/onboarding/verification-workflows) you use decides which ones are included.
+
+| Check | What it answers |
+| --- | --- |
+| Document quality and type | Is the photo sharp and complete, and is it an accepted identity document? |
+| Document authenticity | Does the document look genuine and unaltered? |
+| Details | Can the details be read from the document, and do the confirmed details match them? |
+| Liveness | Is a live person in front of the camera, not a photo, screen or mask? |
+| Face match | Does the face in the selfie match the photo on the document? |
+| Screening | Does the person appear on sanctions lists, politically exposed person (PEP) lists or in adverse media? |
+| Overall risk | Taken together, is the verification low or high risk? |
+
+When the applicant corrects a detail, Skaletek keeps both values: the one read from the document and the one the applicant confirmed. Screening uses the confirmed details. Your reviewers see both side by side.
+
+## Possible outcomes
+
+Every session ends with one of three outcomes.
+
+| Outcome | When | What the applicant sees | What happens next |
+| --- | --- | --- | --- |
+| **Approved** | All checks pass. | **You've been verified** | The customer can go ahead. Your systems receive the result. |
+| **Pending review** | Something needs a person to look at it, such as a possible screening match or a corrected detail. | **Your verification is under review**, with a note that you will share an update | A reviewer on your team decides. See [Review an identity verification](/guides/onboarding/reviewing-a-verification). |
+| **Rejected** | A check fails clearly, for example the face does not match the document. | **We couldn't verify your identity** | The customer cannot go ahead with this session. You decide whether to offer a new attempt. |
+
+A session that the applicant never finishes ends as **Expired**.
+
+<Screenshot name="ekyc-applicant-result-approved" alt="Final screen after an approved verification: You've been verified, with a Return to partner button that takes the applicant back to your app" src="/images/screenshots/ekyc-applicant-result-approved.desktop.light.en.png" />
+
+<Note>
+The applicant is not sent back to your app automatically. Your app learns the outcome from Skaletek, not from the applicant's return.
+</Note>
+
+## Where results appear
+
+- **Verifications** › **Individual** lists every session with its progress, its session status and its review status. Open a session to see the document, the selfie and face scan, the screening summary and the full history.
+- **Data** › **Transactions & Events** records each decision as an event on the **eKYC Verification** template, with the person's verified details.
+- **Data** › **Entities** shows the verified person as a customer profile. Their transfers and alerts link to that same profile.
+
+<Accordion title="For developers" icon="code">
+  Your server creates the applicant and the verification session through the API, then sends the applicant to the hosted flow. Results reach your systems by webhook. Start with the [eKYC quickstart](/developers/ekyc/quickstart), then read [Hosted flow](/developers/ekyc/hosted-flow) and [Receiving results](/developers/ekyc/receiving-results). To verify without an applicant on screen, see [API-only verification](/developers/ekyc/api-only).
+</Accordion>
+
+## See it in the remittance example
+
+<ExampleNote />
+
+Aminata Sow lives in Lyon and wants to send money to her brother Moussa in Dakar. Before her first transfer, Teranga Transfer sends her a verification link. She photographs her Senegalese passport `SAMPLE-P-0001`, confirms her details, takes a selfie and scans her face. All checks pass, and she sees **You've been verified**. Follow her step by step in [Onboard a sender](/tutorial/onboard-a-sender).
+
+## Related
+
+- [Review an identity verification](/guides/onboarding/reviewing-a-verification)
+- [Verification workflows](/guides/onboarding/verification-workflows)
+- [Re-verification and step-up](/guides/onboarding/re-verification-and-step-up)
+- [Onboarding overview](/guides/onboarding/overview)
+- [Glossary](/glossary)

@@ -1,0 +1,194 @@
+/* Shared styles for /snippets/components.jsx. Every class is prefixed `sk-`. */
+
+:root {
+  --sk-primary: #126dd6;
+  --sk-border: #e5e7eb;
+  --sk-muted: #6b7280;
+  --sk-surface: #f8fafc;
+  --sk-ops: #0f766e;
+  --sk-configure: #7c3aed;
+  --sk-build: #126dd6;
+  --sk-preview: #b45309;
+  --sk-takeaway: #15803d;
+  --sk-important: #b91c1c;
+}
+
+html.dark {
+  --sk-primary: #5ea2ec;
+  --sk-border: #2a2f3a;
+  --sk-muted: #9ca3af;
+  --sk-surface: #151a23;
+  --sk-ops: #2dd4bf;
+  --sk-configure: #a78bfa;
+  --sk-build: #5ea2ec;
+  --sk-preview: #fbbf24;
+  --sk-takeaway: #4ade80;
+  --sk-important: #f87171;
+}
+
+/* Track badges and reading time */
+.sk-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+  font-size: 0.8125rem;
+}
+
+.sk-badge {
+  display: inline-block;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.sk-track-operations { color: var(--sk-ops); }
+.sk-track-configure { color: var(--sk-configure); }
+.sk-track-build { color: var(--sk-build); }
+.sk-availability { color: var(--sk-preview); }
+
+.sk-reading-time {
+  color: var(--sk-muted);
+}
+
+/* Lifecycle stepper */
+.sk-stepper {
+  margin: 0 0 1.5rem;
+  overflow-x: auto;
+}
+
+.sk-stepper ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-step {
+  flex: 1 1 auto;
+}
+
+.sk-step a {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.25rem;
+  border-bottom: 3px solid var(--sk-border);
+  color: var(--sk-muted);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sk-step a:hover,
+.sk-step a:focus-visible {
+  color: var(--sk-primary);
+}
+
+.sk-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+}
+
+.sk-step-current a {
+  border-bottom-color: var(--sk-primary);
+  color: var(--sk-primary);
+  font-weight: 600;
+}
+
+.sk-step-current .sk-step-number {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+  color: #fff;
+}
+
+/* Example disclaimer */
+.sk-example-note {
+  color: var(--sk-muted);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+/* Custom callouts */
+.sk-callout {
+  margin: 1.25rem 0;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--sk-border);
+  border-left: 4px solid var(--sk-primary);
+  border-radius: 0.5rem;
+  background: var(--sk-surface);
+}
+
+.sk-callout p { margin: 0.25rem 0; }
+.sk-callout > :first-child { margin-top: 0; }
+.sk-callout > :last-child { margin-bottom: 0; }
+
+.sk-callout-title {
+  margin: 0 0 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.sk-callout-tryit { border-left-color: var(--sk-primary); }
+.sk-callout-tryit .sk-callout-title { color: var(--sk-primary); }
+.sk-callout-takeaway { border-left-color: var(--sk-takeaway); }
+.sk-callout-takeaway .sk-callout-title { color: var(--sk-takeaway); }
+.sk-callout-important { border-left-color: var(--sk-important); }
+.sk-callout-important .sk-callout-title { color: var(--sk-important); }
+.sk-callout-preview { border-left-color: var(--sk-preview); }
+.sk-callout-preview .sk-callout-title { color: var(--sk-preview); }
+
+.sk-callout-cta {
+  font-size: 0.875rem;
+}
+
+/* Screenshots */
+.sk-screenshot {
+  margin: 1.25rem 0;
+}
+
+.sk-screenshot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--sk-border);
+  border-radius: 0.75rem;
+}
+
+/* Screenshot placeholder */
+.sk-screenshot-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 12rem;
+  margin: 1.25rem 0;
+  padding: 1.5rem;
+  border: 2px dashed var(--sk-border);
+  border-radius: 0.75rem;
+  color: var(--sk-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.sk-screenshot-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

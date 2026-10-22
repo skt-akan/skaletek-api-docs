@@ -1,0 +1,120 @@
+---
+title: "Errors and limits"
+description: "The error bodies the eKYC API returns, what each status code and error type means, what to do next, and the limits on sessions, applicants and callers."
+type: reference
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+---
+
+import { PageMeta } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={4} availability="ga" />
+
+The electronic know your customer (eKYC) API at `https://kyc.skaletek.example` uses standard HTTP status codes. Its error bodies differ from the monitoring API described in [Errors](/developers/errors).
+
+## Error bodies
+
+The eKYC API returns errors in two shapes.
+
+**Service errors** have a `type` and a `message`:
+
+```json
+{
+  "type": "rate_limited",
+  "message": "too many requests"
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `type` | A stable code. Branch on this field. |
+| `message` | A human-readable explanation. The wording can change. |
+
+**Validation errors** have status `422` and a `detail` list, with one item per problem:
+
+```json
+{
+  "detail": [
+    {
+      "type": "less_than_equal",
+      "loc": ["query", "limit"],
+      "msg": "Input should be less than or equal to 100",
+      "input": "200"
+    }
+  ]
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `type` | The kind of problem, such as `missing` or `extra_forbidden`. |
+| `loc` | Where the problem is: `body`, `query` or `path`, then the field name. |
+| `msg` | A human-readable explanation. |
+| `input` | The value you sent. |
+
+Check for `detail` first. If it is absent, read `type`.
+
+## Status codes and error types
+
+| Status | `type` | Meaning | What to do |
+| --- | --- | --- | --- |
+| `401` | `unauthenticated` | The `X-API-Key` header is missing ("no credentials"), or the key is not valid ("invalid credentials"). | Send a valid key. See [Authentication](/developers/authentication). |
+| `404` | `not_found` | The applicant, session or verification does not exist. The message names it, for example "session not found". | Check the ID. Don't retry unchanged. |
+| `409` | `concurrent_device` | The applicant opened the same session on a second device. The applicant sees this in the hosted flow; your server does not. | The applicant continues on the first device, or moves with **Scan QR code**. |
+| `422` | `workflow_not_found` | The `workflow_template` name does not exist. | Use a name from [Verification workflows](/developers/ekyc/workflows). |
+| `422` | `storage_key_not_issued` | An API-only verification cites a storage key that `POST /v1/uploads/presign` did not issue to your account. | Request an upload target and cite its `storage_key`. See [API-only verification](/developers/ekyc/api-only). |
+| `422` | `missing` (in `detail`) | A required field is missing. | Add the field named in `loc`. |
+| `422` | `extra_forbidden` (in `detail`) | The body has a field the endpoint does not accept. For example, `is_demo` on an API-only verification. | Remove the field named in `loc`. |
+| `422` | `literal_error` (in `detail`) | A value is not one of the allowed values. | Use an allowed value. The `msg` lists them. |
+| `422` | `greater_than_equal`, `less_than_equal` (in `detail`) | A number is out of range. For example, `expire_in` below 5 minutes, or `limit` above 100. | Send a value in range. |
+| `429` | `rate_limited` | Too many requests. | Wait for the number of seconds in the `Retry-After` header, then retry. |
+| `5xx` | — | Something failed on Skaletek's side. | Retry with exponential backoff. If it persists, contact support. |
+
+`4xx` errors other than `429` don't go away on retry. Fix the request first.
+
+## Limits
+
+### Sessions per applicant
+
+Skaletek limits how many sessions you can create for one applicant in a short period. Beyond the limit, `POST /v1/applicants/{applicant_id}/sessions` returns `429` with `rate_limited` and a `Retry-After` header in seconds. Other applicants are not affected.
+
+If you hit this limit, check that your code does not create a new session on every page load. Reuse the open session: its link resumes where the applicant left off.
+
+### Session lifetime
+
+- `expire_in` on a hosted flow session is in minutes, with a minimum of 5.
+- `ttl_minutes` on a step-up session is from 5 to 1,440 minutes.
+- A session the applicant does not finish in time becomes `EXPIRED`. Create a new one.
+
+### Lists
+
+`GET /v1/applicants` returns at most 100 items per page. Use `limit` and `offset` to page through.
+
+### Uploads
+
+API-only files can be up to 20 MB. Each upload target accepts one file of the format you declared. See [API-only verification](/developers/ekyc/api-only).
+
+## Creating applicants: get or create
+
+`POST /v1/applicants` returns an existing applicant when you send an `external_id` you already used. It responds `201` with the original record, even if the other fields in your request differ. It does not update the applicant and does not return a conflict error.
+
+- To find an applicant, use `GET /v1/applicants?external_id=TT-CUST-0001`.
+- To change an applicant's details, use `PATCH /v1/applicants/{applicant_id}` with only the fields to change.
+
+The eKYC API takes no idempotency key. Use `external_id` to avoid duplicate applicants when you retry.
+
+## Server-to-server only
+
+Call the eKYC API from your backend. It does not accept calls from browsers on other websites, so a call from your web page fails before it reaches Skaletek. Your API key must never reach a browser or a mobile app.
+
+The applicant's browser talks only to the Skaletek verification app, through the link you give them.
+
+## Related
+
+- [Authentication](/developers/authentication)
+- [Errors (monitoring API)](/developers/errors)
+- [Sessions and statuses](/developers/ekyc/sessions-and-statuses)
+- [API-only verification](/developers/ekyc/api-only)
+- [Verification workflows](/developers/ekyc/workflows)

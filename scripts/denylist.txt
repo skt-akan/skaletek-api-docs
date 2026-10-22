@@ -1,0 +1,81 @@
+# Confidentiality denylist (SPEC-documentation §7.4). One JavaScript regular expression per line,
+# matched case-insensitively against every published page and openapi.json. Prefix a line with
+# "cs:" to match case-sensitively. A page may allow a term with `denylist_allow: [term]` in its
+# front matter, for example to name a reader's own AI tool on the AI tools page.
+#
+# Engineering owns this list. Add internal names here as soon as they exist.
+
+# Infrastructure and hosting
+\bpostgres(ql)?\b
+\bredis\b
+\bkafka\b
+\bnats\b
+\bclickhouse\b
+\bnomad\b
+\bconsul\b
+\bdocker\b
+\bkubernetes\b|\bk8s\b
+\baws\b|amazon web services
+\bovh\b
+\bhetzner\b
+\bcloudflare\b
+\btraefik\b
+\bgrafana\b
+\bprometheus\b
+\bminio\b
+
+# Internal services and components
+skalemon
+skalematch
+\bkyc-back\b
+\brule[-_ ]engine\b
+intelligence-service
+deferred-queue
+priority-queue
+tenant-api
+billing-engine
+\balertrelay\b
+\btxgen\b
+
+# Data, identity and screening providers
+opensanctions
+\byente\b
+\bsumsub\b
+\bonfido\b
+dow jones
+refinitiv
+world-check
+complyadvantage
+
+# AI providers and models
+\bopenai\b
+\banthropic\b
+\bclaude\b
+\bgpt(-?\d|-?4o?)?\b
+\bgemini\b
+\bmistral\b
+\bllama\b
+
+# Messaging and payment providers
+\bresend\b
+\bpostmark\b
+\bsendgrid\b
+\bmailgun\b
+\bstripe\b
+\bflutterwave\b
+\bcinetpay\b
+\bpaystack\b
+cs:\bWave\b
+
+# eKYC: hosting, vendors and internal names seen in the KYC service (2026-10-21)
+\bamplify\b
+cloudfront
+execute-api
+\buvicorn\b
+face api
+\brekognition\b
+\btextract\b
+kyc-service
+id_detector
+local-liveness
+natwest

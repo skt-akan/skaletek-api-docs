@@ -1,0 +1,116 @@
+---
+title: "Sign up and set up"
+description: "Start a free trial, describe Teranga Transfer in the setup wizard, install the remittance starter pack and see which regulations apply to you."
+type: tutorial
+tracks: [configure]
+availability: preview
+tag: "Preview"
+owner: docs
+last_reviewed: 2026-10-20
+glossary_terms: [starter-pack, obligation]
+---
+
+import { AGENT, PageMeta, PreviewNotice, ExampleNote, TryIt, KeyTakeaway, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["configure"]} minutes={8} availability="preview" />
+
+<PreviewNotice feature="Free trial signup, the setup wizard and starter packs" />
+
+**In this chapter:** you create a trial account, tell the setup wizard what Teranga Transfer does, and install the remittance starter pack.
+The platform then lists the regulations that apply to a money transfer company in Senegal, and {AGENT} offers to explain them. **Time:** 8 minutes.
+
+<ExampleNote />
+
+## What happens in the story
+
+Teranga's compliance officer wants to see the platform on realistic data before connecting any system. A trial with the remittance starter pack gives the team a working setup in a few minutes: an event template, starter rules for anti-money laundering (AML), a report template and the sample cast.
+
+## Create your trial account
+
+The signup form fits on one screen, in English or French. You give your full name, your work email, a password, your company, your country and a phone number. You also accept the terms of service, the privacy policy and the data processing agreement for your company.
+
+You can also sign up with Google or Microsoft. You still give your company, country and phone number.
+
+After you submit the form, you receive one email with a verification link and a six-digit code. Use either one within 60 minutes. Your trial organization is then created and the setup wizard starts.
+
+<Note>
+  Signup needs a work email address. If you cannot use one, select Can't use a work email? on the signup page to send a request to the Skaletek team.
+</Note>
+
+## Answer the setup wizard
+
+The wizard has five screens and takes under three minutes. You can skip any step and come back to it later. Your company details live in **Settings** › **General Settings** › **Personal** › **Profile**. Your answers are saved as you go.
+
+<Steps>
+  <Step title="Company">
+    Enter your legal name and countries of operation. Choose a licence or activity type: Teranga picks Money transfer / remittance. Choose your products: Teranga picks Transfers / remittance and Mobile wallets. The wizard suggests your regulators from your country and licence type. For Teranga, it suggests the BCEAO and CENTIF-GN, the financial intelligence unit set up for this example.
+  </Step>
+  <Step title="Your role">
+    Answer What best describes your role? Teranga's compliance officer picks Compliance officer / MLRO (money laundering reporting officer). Your role sets your home screen and the docs track suggested to you. It never grants permissions.
+  </Step>
+  <Step title="Goals">
+    Answer What do you want to achieve first? Teranga picks monitoring transactions for money laundering, screening customers against sanctions lists, verifying customers' and businesses' identity, and filing suspicious transaction reports (STRs).
+  </Step>
+  <Step title="Starter pack">
+    The wizard recommends up to three starter packs that match your answers. If you came from these docs, Remittance / money transfer appears first, marked Selected from the docs. Each card shows what the pack installs.
+  </Step>
+  <Step title="Done">
+    The pack installs, with a progress line for each item. Keep Load sample data checked to load the Teranga cast and its five transfers. The screen then lists the regulations that apply to you.
+  </Step>
+</Steps>
+
+<Screenshot name="onboarding-wizard-done-remittance" alt="The wizard's Done screen: the remittance pack installed item by item, Load sample data checked, and the regulations that apply to a money transfer company in Senegal" />
+
+## What the remittance starter pack installs
+
+| Item | What you get | State after install |
+| --- | --- | --- |
+| Event template | _Remittance transfer_, with sender, recipient, payout agent and transaction roles | Active |
+| Starter rules | _Just below the declaration threshold, many senders to one recipient_, and _Payout agent cash share spike_ | Shadow mode on your own data |
+| Threshold you can set | Declaration threshold: 5 000 000 XOF (West African CFA francs), a simplified illustration | Check it against current texts before going live |
+| Report template | Suspicious transaction report to CENTIF-GN | Active |
+| Case template | AML suspicion review | Active |
+| Sample data | The cast, the five transfers, a know your customer (KYC) record, a know your business (KYB) record and a sample sanctions list | Loaded on request |
+
+Shadow mode (preview) means a rule records what it would have done on your own data, without raising live alerts. On sample data, the pack's rules run as if live, so you see the alert this story is built around.
+
+## See which regulations apply
+
+When you complete the Company step, the platform subscribes your organization to the regulations that match your profile. The Done screen lists them in plain language, starting with why they apply to you: a money transfer company in Senegal. Each regulation links to the obligations it brings, such as reporting suspicions to CENTIF-GN.
+
+You find the full list later in the regulatory settings. If you change your profile, new matches arrive as regulatory news. Nothing changes silently.
+
+## Go further with {AGENT}
+
+The Done screen offers Go further with the assistant. {AGENT} starts from your wizard answers and never asks them again. Its first message sums up what it knows: a money transfer company in Senegal, your goals and the pack you installed.
+
+Ask it to Explain the regulations that apply to us. {AGENT} walks through each subscribed regulation and what it expects of you. It can also help you adjust starter rules or prepare reports. Anything it proposes stays a draft until a person approves it. Read [Human in the loop](/ai-assistant/human-in-the-loop) for how approval works.
+
+Declining costs nothing. Every outcome is also reachable through the screens.
+
+<TryIt>
+1. Select Start free trial with this example and complete the signup form.
+2. Verify your email with the link or the six-digit code.
+3. In the wizard, choose Money transfer / remittance as your licence type, then continue to the Starter pack step.
+4. Keep Remittance / money transfer selected and keep Load sample data checked.
+5. On the Done screen, read the list of regulations, then select Go further with the assistant and ask it to explain them.
+</TryIt>
+
+<Accordion title="For developers" icon="code">
+  The wizard is the no-code path. Once your trial exists, create an API key to send events from your own systems. See [Authentication](/developers/authentication) and the [Quickstart](/developers/quickstart).
+</Accordion>
+
+<KeyTakeaway>
+Five short screens describe your business. From those answers, the platform installs a working remittance setup and tells you which regulations apply, before you send a single real transfer.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+The sample data you just loaded creates Moussa's profile and the profiles of everyone around him. Open **Entities** and search for Moussa Ndiaye: his profile already shows the five transfers, each marked Sample.
+
+<Screenshot name="entities-profile-moussa-sample-badge" alt="Moussa Ndiaye's profile right after sample data loads, with the Sample badge and his five incoming transfers" />
+
+## Next
+
+- Next chapter: [Describe your transfers](/tutorial/describe-your-transfers)
+- Go deeper: [Regulatory compliance](/guides/regulatory-compliance/overview) and [What the AI assistant does](/ai-assistant/overview)

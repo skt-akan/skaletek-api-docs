@@ -1,0 +1,211 @@
+---
+title: "eKYC quickstart"
+sidebarTitle: "Quickstart"
+description: "Create an applicant, start a test verification session, complete the hosted flow in your browser and read the decision from the KYC API, with curl."
+type: tutorial
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+example_chapter: tutorial/onboard-a-sender
+glossary_terms: [kyc]
+---
+
+import { PageMeta, ExampleNote } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={15} availability="ga" />
+
+This guide takes you from an API key to a first identity verification decision. You play the developer at Teranga Transfer. Before Aminata Sow sends her first transfer, you verify her identity with the hosted web flow. You use a test session, so the checks are simulated and no real identity document is needed.
+
+<ExampleNote />
+
+## Before you begin
+
+You need:
+
+- **An API key** with the permissions **Create Identity Verifications** and **View Identity Verifications**. Create it in the dashboard under **Settings** › **General Settings** › **Configurations** › **API keys** › **Create keys**. In the **Create key** dialog, enter a **Key name**, select both permissions in **Permissions**, choose an **Expiry** and click **Create key**. Copy the key before you click **Dismiss**: you cannot see it again. See [Authentication](/developers/authentication).
+- **A browser on a device with a camera**: a phone, or a computer with a webcam.
+- `curl` and [`jq`](https://jqlang.github.io/jq/).
+
+Set the KYC API address and your key once, so the commands below work as written.
+
+```bash
+export SKALETEK_KYC_URL="https://kyc.skaletek.example"
+export SKALETEK_API_KEY="your-api-key"
+```
+
+<Note>
+  The hosts in this guide (`kyc.skaletek.example` and `verify.skaletek.example`) are placeholders. Use the addresses for your Skaletek environment. The IDs in the responses are shortened samples: real IDs are UUIDs.
+</Note>
+
+## 1. Create the applicant
+
+An applicant is the person you verify. Create Aminata with her details. `external_id` is your own customer number for her. Country codes are lowercase two-letter ISO 3166-1 codes. `jurisdiction` is the country she is verified from: it pre-fills the issuing country on the document screen.
+
+```bash
+curl -s -X POST "$SKALETEK_KYC_URL/v1/applicants" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @- <<'JSON' | tee applicant.json | jq '{id, external_id, first_name, last_name, date_of_birth, nationality, jurisdiction, created_at}'
+{
+  "first_name": "Aminata",
+  "last_name": "Sow",
+  "external_id": "TT-CUST-0001",
+  "email": "aminata.sow@example.com",
+  "date_of_birth": "1990-04-12",
+  "nationality": "sn",
+  "jurisdiction": "fr"
+}
+JSON
+```
+
+The API answers `201 Created` with the applicant. Only `first_name` and `last_name` are required.
+
+```json
+{
+  "id": "app_smp_0001",
+  "external_id": "TT-CUST-0001",
+  "first_name": "Aminata",
+  "last_name": "Sow",
+  "date_of_birth": "1990-04-12",
+  "nationality": "sn",
+  "jurisdiction": "fr",
+  "created_at": "2026-10-21T10:36:53.629459Z"
+}
+```
+
+Keep the applicant's ID.
+
+```bash
+export APPLICANT_ID=$(jq -r '.id' applicant.json)
+```
+
+<Note>
+  Creating an applicant is get-or-create on `external_id`. If you send the same `external_id` again, you get `201` with the original applicant, unchanged, even if the other fields differ. To change an applicant's details, use `PATCH /v1/applicants/{applicant_id}`.
+</Note>
+
+## 2. Create a test session
+
+A session is one attempt to verify the applicant. Create it from your backend.
+
+```bash
+curl -s -X POST "$SKALETEK_KYC_URL/v1/applicants/$APPLICANT_ID/sessions" \
+  -H "X-API-Key: $SKALETEK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @- <<'JSON' | tee session.json | jq
+{
+  "workflow_template": "standard_kyc",
+  "redirect_url": "https://teranga.example.com/kyc/done",
+  "expire_in": 60,
+  "is_demo": true,
+  "demo_expected_outcome": "APPROVED",
+  "metadata": {"teranga_customer": "TT-CUST-0001"}
+}
+JSON
+```
+
+| Field | Meaning |
+| --- | --- |
+| `workflow_template` | The verification workflow to run. `standard_kyc` is the default: document, data check, selfie, face scan, face comparison, screening and decision. |
+| `redirect_url` | Where **Return to partner** sends the applicant at the end. |
+| `expire_in` | How long the session stays open, in minutes. The minimum is 5 and the default is 60. |
+| `is_demo` | `true` makes this a test session: every screen runs, but the checks are simulated. |
+| `demo_expected_outcome` | The decision a test session produces: `APPROVED` or `REJECTED`. |
+| `metadata` | Your own key-value pairs, for your tracking. |
+
+The API answers `201 Created`.
+
+```json
+{
+  "session_id": "ses_smp_0001",
+  "token": "tok_smp_0001",
+  "session_jwt": "eyJ…",
+  "redirect_url": "https://teranga.example.com/kyc/done",
+  "expires_at": "2026-10-21T11:37:05.306950Z"
+}
+```
+
+- `session_id` identifies the session. You use it to read the result.
+- `token` identifies the session in the verification link. It is not a credential.
+- `session_jwt` is a short-lived credential that works only for this session. It lets the applicant's browser complete the flow. It cannot call any other endpoint.
+
+## 3. Open the verification link
+
+The response does not contain a link: you build it from `token` and `session_jwt`. The `session_jwt` goes in the fragment, after `#jwt=`.
+
+```bash
+export SESSION_ID=$(jq -r '.session_id' session.json)
+export SESSION_TOKEN=$(jq -r '.token' session.json)
+export SESSION_JWT=$(jq -r '.session_jwt' session.json)
+
+echo "https://verify.skaletek.example/s/${SESSION_TOKEN}#jwt=${SESSION_JWT}"
+```
+
+Open the link in your browser. If you are on a computer, you can also open it there and choose **Scan QR code** to continue on your phone.
+
+Complete the flow as Aminata would:
+
+1. On **Verify your identity**, click **Continue**. On a computer, click **Continue on this computer** or scan the QR code with your phone.
+2. Click **Start capture** and photograph any test image of a document. Never use a real identity document. If the photo is not taken automatically, click **Capture document manually**.
+3. Set **Issuing country** to **United States** and **Document type** to **Passport**, then click **Continue**.
+4. On **Check your details**, you see a fixed test identity, "Demo User". Click **Confirm details**.
+5. On **Take a selfie**, click **Take photo**, then **Use this photo**.
+6. On **Get ready for your face scan**, click **Start verification** and follow the face scan.
+7. The result screen shows **You've been verified**.
+
+<Tip>
+  Choose **United States** and **Passport** in test sessions. The simulated document is always a US passport. If you pick another country or document type, the mismatch can send the session to `PENDING_REVIEW` instead of `APPROVED`.
+</Tip>
+
+**Return to partner** opens your `redirect_url` exactly as you set it, with no parameters. In this guide, `teranga.example.com` does not exist, so the page does not load. That is expected.
+
+## 4. Check the result
+
+Read the session from your backend. Never treat the applicant's return to your `redirect_url` as proof of the result.
+
+```bash
+curl -s "$SKALETEK_KYC_URL/v1/sessions/$SESSION_ID" \
+  -H "X-API-Key: $SKALETEK_API_KEY" | jq
+```
+
+```json
+{
+  "id": "ses_smp_0001",
+  "applicant_id": "app_smp_0001",
+  "session_type": "KYC",
+  "status": "APPROVED",
+  "decision": "APPROVED",
+  "evidence_bundle_id": "evb_smp_0001",
+  "expires_at": "2026-10-21T11:37:05.306950Z",
+  "created_at": "2026-10-21T10:37:05.290926Z"
+}
+```
+
+`status` is `APPROVED` and `decision` is `APPROVED`: Aminata's identity is verified. `evidence_bundle_id` refers to the evidence collected during the session. Your reviewers see it in the dashboard under **Verifications** › **Individual**.
+
+If the status is still `IN_PROGRESS` or `PROCESSING`, wait a few seconds and try again. If it is `PENDING_REVIEW`, the session needs a person to decide: see [Sessions and statuses](/developers/ekyc/sessions-and-statuses).
+
+This endpoint returns the status and decision only. Reason codes and the risk level come with the eKYC Verification event, described in [Receiving results](/developers/ekyc/receiving-results).
+
+## 5. What to do next
+
+- **Receive results automatically.** Subscribe to the eKYC Verification event with a webhook, so you do not need to poll. See [Receiving results](/developers/ekyc/receiving-results).
+- **Try the other outcomes.** Create a test session with `"demo_expected_outcome": "REJECTED"`. See [Test your integration](/developers/ekyc/testing).
+- **Go live.** Remove `is_demo` and `demo_expected_outcome` from the session request. Set `redirect_url` to a real page in your app that checks the result from your backend.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Hosted verification flow" icon="window-maximize" href="/developers/ekyc/hosted-flow">
+    Deliver the link by redirect, email or in-app view, and handle expiry.
+  </Card>
+  <Card title="Receiving results" icon="bell" href="/developers/ekyc/receiving-results">
+    Get every decision by webhook.
+  </Card>
+  <Card title="Sessions and statuses" icon="list-check" href="/developers/ekyc/sessions-and-statuses">
+    What each status and decision means.
+  </Card>
+  <Card title="Errors and limits" icon="triangle-exclamation" href="/developers/ekyc/errors-and-limits">
+    Error formats, rate limits and how to retry.
+  </Card>
+</CardGroup>

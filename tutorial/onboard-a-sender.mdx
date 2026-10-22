@@ -1,0 +1,101 @@
+---
+title: "Onboard a sender"
+description: "Follow Aminata Sow's identity verification from passport photo to selfie and face scan, and see how her verified identity creates her customer profile."
+type: tutorial
+tracks: [operations]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [kyc, entity]
+---
+
+import { PageMeta, ExampleNote, TryIt, KeyTakeaway, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations"]} minutes={5} availability="ga" />
+
+**In this chapter:** you follow Aminata Sow's know your customer (KYC) identity verification: her passport, her selfie, her face scan and the result.
+You see how her verified identity becomes a customer profile that every later transfer links to. **Time:** 5 minutes.
+
+<ExampleNote />
+
+## What happens in the story
+
+Aminata lives in Lyon and wants to send money to her brother Moussa in Dakar. Before her first transfer, Teranga Transfer must verify who she is. Teranga's app opens the Skaletek verification flow on her phone. When she is done, she goes straight back to Teranga's app.
+
+## What Aminata does
+
+<Steps>
+  <Step title="Start the verification">
+    The **Verify your identity** screen lists two steps: **ID verification** and **Face liveness**. Aminata taps **Continue**, then **Start capture**.
+  </Step>
+  <Step title="Photograph her passport">
+    She holds her passport in front of the camera. The camera takes the photo once it is sharp. She sets the **Issuing country** to Senegal and the **Document type** to **Passport**, then taps **Continue**. A passport has one side, so she is not asked to flip it.
+  </Step>
+  <Step title="Check her details">
+    On **Check your details**, she sees her name, date of birth, nationality, passport number and expiry date, read from her passport. Each one is correct, so she taps **Confirm details**. Had she edited a value, your reviewers would see both the value read from the passport and her correction.
+  </Step>
+  <Step title="Take a selfie">
+    On **Take a selfie**, she puts her face in the oval and taps **Take photo**. She checks the photo and taps **Use this photo**.
+  </Step>
+  <Step title="Scan her face">
+    On **Get ready for your face scan**, she taps **Start verification** and holds her face in the oval for a few seconds. This shows that a live person is present.
+  </Step>
+  <Step title="Get the result">
+    All checks pass. She sees **You've been verified** and taps **Return to partner** to go back to Teranga's app. Had something needed a closer look, she would see **Your verification is under review** instead.
+  </Step>
+</Steps>
+
+<Columns cols={2}>
+  <Screenshot name="ekyc-applicant-document-intro" alt="Document step on a phone: Verify your identity, about 3 minutes, tips for good lighting and holding the document steady, and a Start capture button" src="/images/screenshots/ekyc-applicant-document-intro.mobile.light.en.png" />
+  <Screenshot name="ekyc-applicant-face-scan-done" alt="Face scan step completed on a phone, just before the applicant sees the final result" src="/images/screenshots/ekyc-applicant-face-scan-done.mobile.light.en.png" />
+</Columns>
+
+<Screenshot name="ekyc-applicant-result-approved" alt="Final screen of an approved verification: You've been verified, with Return to partner to go back to Teranga's app" src="/images/screenshots/ekyc-applicant-result-approved.desktop.light.en.png" />
+
+## What you see as an analyst
+
+Each identity verification is a **session**. Go to **Verifications** › **Individual**. Aminata's row shows **Success** under KYC CHECKS and **Approved** under SESSION. Click her name to open the session.
+
+| Part of the session | What it shows for Aminata |
+| --- | --- |
+| **Summary** | Her name and the status **Approved** |
+| **Identity Document** | Her passport `SAMPLE-P-0001` and the details read from it |
+| **Profile** tab | Each value read from her passport next to the value she confirmed: no differences |
+| **Liveness Check** and **Face match** tab | Her selfie and face scan, and her selfie next to her passport photo |
+| **AML Summary** | Anti-money laundering (AML) screening against politically exposed person (PEP), sanctions and asset freeze lists, and adverse media: no match |
+| **Activities** tab | Every step and action on the session, with the time |
+
+When a session needs review, its SESSION column shows **Pending review**. A reviewer can **Approve**, **Reject**, **Request document** or **Escalate**, always with a reason. Every action is recorded with the reviewer's name and the time. See [Review an identity verification](/guides/onboarding/reviewing-a-verification).
+
+<Screenshot name="onboarding-session-aminata-approved" alt="Aminata Sow's identity verification session: Approved status, passport details next to her confirmed values, and liveness and face match results" />
+
+## Her profile is created
+
+Once the session is approved, the platform creates or updates Aminata's customer profile. Her verified name, date of birth, nationality and passport number become the profile's current values. Because they come from a verified check, they take priority over details typed later in a transfer. Earlier values stay in the profile's history.
+
+Her profile in **Entities** now carries her verified identity. Her passport number is one of her identifiers, so every transfer she sends links to this same profile.
+
+<TryIt>
+1. Go to **Verifications** › **Individual** and open Aminata Sow's session.
+2. On the **Profile** tab, compare the values read from her passport with the values she confirmed.
+3. Open her profile from **Entities** and look at the **Details** tab.
+</TryIt>
+
+<Accordion title="For developers" icon="code">
+  Your server creates the applicant and the verification session through the API, sends the applicant to the hosted flow, and receives the result by webhook. Follow the [eKYC quickstart](/developers/ekyc/quickstart), which uses Aminata as its example, and see [Authentication](/developers/authentication) for API keys.
+</Accordion>
+
+<KeyTakeaway>
+A verified identity is the starting point of a customer profile. Every transfer Aminata sends later links back to the person you verified.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+Aminata's profile keeps her identity verification sessions, newest first, and compares her verified values with her current profile. On Moussa's profile, Aminata appears as a verified sender of two of his five transfers.
+
+<Screenshot name="entities-profile-aminata-kyc-tab" alt="Aminata Sow's profile: the approved identity verification session, her verified name and date of birth, and no mismatch with her profile" />
+
+## Next
+
+- Next chapter: [Onboard a partner agent](/tutorial/onboard-a-partner-agent)
+- Go deeper: [How identity verification works](/guides/onboarding/verifying-people)

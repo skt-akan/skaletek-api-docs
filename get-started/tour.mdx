@@ -1,0 +1,142 @@
+---
+title: "15-minute tour"
+description: "Follow five transfers at a fictional money transfer company from the first alert to a filed report, and see each part of Skaletek at work."
+type: tutorial
+tracks: [operations, configure, build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+example_chapter: tutorial/meet-teranga-transfer
+glossary_terms: [alert, case, suspicious-transaction-report]
+---
+
+import { AGENT, PageMeta, ExampleNote, PreviewNotice, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations", "configure", "build"]} minutes={15} availability="ga" />
+
+This tour follows one story through Skaletek in six stops. You see an alert explained, a customer's full picture, a case prepared, a report filed and a rule updated after a regulatory change. Each stop links to the full tutorial chapter if you want to go deeper.
+
+<Note>
+  An 8–10 minute walkthrough video of this tour is coming soon. It will appear here, with a marker for each stop.
+</Note>
+
+## Stop 1: Meet Teranga Transfer
+
+<ExampleNote />
+
+Teranga Transfer is a licensed money transfer company in Senegal. Its customers live in France and Italy and send money home. Teranga pays it out in Senegal, in cash at partner agents or to mobile wallets. Its supervisor is the BCEAO (Banque Centrale des États de l'Afrique de l'Ouest). It files suspicion reports with CENTIF-GN, the financial intelligence unit set up for this example.
+
+Over six days, Moussa Ndiaye in Dakar receives five transfers:
+
+| Day | Sender | Amount | Payout |
+| --- | --- | --- | --- |
+| 1 | Aminata Sow (Lyon) | 4,750,000 XOF | Cash at Point Marché Tilène |
+| 2 | Fatou Ba (Milan) | 4,600,000 XOF | Mobile wallet |
+| 3 | Cheikh Tall (Paris) | 4,950,000 XOF | Cash at Point Marché Tilène |
+| 5 | Aminata Sow (Lyon) | 4,800,000 XOF | Cash at Point Marché Tilène |
+| 6 | Fatou Ba (Milan) | 4,900,000 XOF | Cash at Point Marché Tilène |
+
+That is 24,000,000 West African CFA francs (XOF) in six days. Each transfer stays under Teranga's 5,000,000 XOF declaration threshold. Aminata is Moussa's sister. Fatou and Cheikh have no stated link to him.
+
+<Screenshot name="dashboard-home-teranga" alt="The Dashboard of the Teranga Transfer trial, with the sample transfers loaded and one open alert." />
+
+Full chapter: [Meet Teranga Transfer](/tutorial/meet-teranga-transfer).
+
+## Stop 2: An alert, explained
+
+Teranga has a rule called _Just below the declaration threshold, many senders to one recipient_. It looks for at least three transfers to the same recipient within seven days. They must come from at least two senders, and each must be between 90% and 100% of the threshold.
+
+On day 3, Cheikh's transfer is the third that qualifies. Skaletek raises one high-severity alert on Moussa. Later transfers do not raise a second alert, because the rule raises at most one alert per recipient every seven days.
+
+Open the alert from **Alerts**. The explanation tells you, in plain words:
+
+- **What happened:** three transfers to Moussa, from three senders, within three days.
+- **Which values:** each amount, and how close it is to the 5,000,000 XOF threshold.
+- **Which window:** the seven days the rule looked at.
+- **Which transfers:** links to each one, so you can check them yourself.
+
+<Screenshot name="alerts-explanation-moussa" alt="The alert on Moussa Ndiaye open on the Rule evaluation tab: four conditions met, each transfer amount within 90% to 100% of the 5,000,000 XOF threshold, three transfers and three senders in 7 days, so the rule raises a high alert." src="/images/screenshots/alerts-detail-rule-evaluation.light.en.png" />
+
+The explanation comes from the actual transfers and the rule that ran. You never have to guess why an alert exists.
+
+Full chapter: [An alert, explained](/tutorial/an-alert-explained).
+
+## Stop 3: See the whole picture
+
+From the alert, select **Profile** next to Moussa to open his customer profile. This is the 360° view: everything Skaletek knows about him on one page.
+
+- **Senders:** Aminata, Fatou and Cheikh.
+- **Payout agent:** Point Marché Tilène, which paid four of the five transfers in cash. Teranga onboarded the agent with know your business (KYB) checks. Its beneficial owner is Ibrahima Fall.
+- **Screening:** an earlier near match on the sample sanctions list. An analyst cleared it as a false positive, with a recorded reason: a different date of birth and nationality.
+- **Timeline and labels:** every transfer and decision, in order.
+- **Relationships:** a graph on the **Explore** tab of who sends to Moussa and where he collects the money.
+- **Lineage:** where each value on his profile, such as his address, came from.
+
+<Screenshot name="entities-graph-moussa" alt="The relationship graph on Moussa Ndiaye's profile, linking him to three senders and to the payout agent Point Marché Tilène." />
+
+Full chapter: [See the whole picture](/tutorial/see-the-whole-picture). To learn what the profile holds, read [The 360° customer view](/get-started/360-view).
+
+## Stop 4: The assistant prepares the case
+
+<Note>
+  **Preview.** {AGENT}, the AI assistant, is in preview and may change before general release.
+</Note>
+
+The analyst opens a case from the alert (preview). {AGENT} prepares it. It gathers the five transfers, the cleared screening match and the facts from Moussa's profile. It proposes tasks for the review and drafts a summary. Each statement in the summary cites the transfer or record it comes from.
+
+The analyst reads the draft, checks the citations, edits the wording and completes the tasks. Nothing goes into the case record until the analyst accepts it.
+
+Full chapter: [The assistant prepares the case](/tutorial/assistant-prepares-the-case). To see what the assistant may and may not do on its own, read [Human in the loop](/ai-assistant/human-in-the-loop).
+
+## Stop 5: Decide and report
+
+<PreviewNotice feature="Recording a suspicion decision in a case" />
+
+The analyst escalates the case to the money laundering reporting officer (MLRO). The MLRO reviews the evidence and decides there is suspicion. That decision is always a person's.
+
+Skaletek drafts a suspicious transaction report (STR) from the case. In French, this is a _déclaration de soupçon_. The MLRO reviews the draft and files it with CENTIF-GN. The case closes with the report reference, so anyone can trace the case to the report later.
+
+<Screenshot name="reporting-str-preview-moussa" alt="The draft suspicious transaction report for CENTIF-GN, built from the case on Moussa Ndiaye, before the MLRO files it." />
+
+Full chapter: [Decide and report](/tutorial/decide-and-report).
+
+## Stop 6: When the rules change
+
+<Note>
+  **Preview.** Regulatory compliance is in preview and may change before general release.
+</Note>
+
+Regulations change. In this stop, a **fictional** new instruction lowers the declaration threshold from 5,000,000 XOF to 4,000,000 XOF.
+
+1. Skaletek shows the instruction as regulatory news.
+2. The obligation it affects is updated.
+3. A change package proposes the new threshold value for Teranga's rule.
+4. Testing on past transfers shows how many more alerts the new value would raise.
+5. An admin reviews the impact and activates the change.
+
+The threshold is a setting Teranga owns. Changing it does not need a new rule or any code.
+
+Full chapter: [When the rules change](/tutorial/when-the-rules-change).
+
+## What you saw
+
+In 15 minutes, you followed five transfers from an alert to a filed report:
+
+- One profile that shows everything about Moussa.
+- One rule and one threshold that Teranga controls.
+- An assistant that prepares the work, and people who make every decision.
+- An alert that explains itself, down to each transfer.
+
+## Try it yourself
+
+The remittance starter pack installs this exact story in a free trial: the template, the rule, the sample transfers and the cast.
+
+[Start free trial with the remittance example](https://app.skaletek.example/signup?pack=remittance)
+
+## Related
+
+- [The 360° customer view](/get-started/360-view)
+- [Pick your track](/get-started/pick-your-track)
+- [Tutorial: Meet Teranga Transfer](/tutorial/meet-teranga-transfer)
+- [Alerts guide](/guides/alerts/overview)
+- [Cases guide](/guides/cases/overview)

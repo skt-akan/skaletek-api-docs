@@ -1,0 +1,199 @@
+---
+title: "Hosted verification flow"
+sidebarTitle: "Hosted flow"
+description: "Build the verification link, send the applicant to it, and handle device hand-off, resuming, expiry and the return to your site, with screens."
+type: how-to
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+example_chapter: tutorial/onboard-a-sender
+glossary_terms: [kyc]
+---
+
+import { PageMeta, ExampleNote, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={8} availability="ga" />
+
+In the hosted flow, Skaletek runs the verification pages and you send the applicant to them. Your backend creates the session, builds a link and hands it to the applicant. This page covers everything between creating the session and reading the result.
+
+<ExampleNote />
+
+If you have not created a session yet, start with the [eKYC quickstart](/developers/ekyc/quickstart).
+
+## Build the link
+
+Create a session with `POST /v1/applicants/{applicant_id}/sessions`. The response holds a `token` and a `session_jwt`. Build the link from them:
+
+```text
+https://verify.skaletek.example/s/<token>#jwt=<session_jwt>
+```
+
+For Aminata's session, in shell:
+
+```bash
+VERIFY_LINK="https://verify.skaletek.example/s/${SESSION_TOKEN}#jwt=${SESSION_JWT}"
+```
+
+- Use both values from the same session response. A link without the `#jwt=` part does not work.
+- The `session_jwt` goes in the fragment, after `#`. Browsers do not send the fragment to servers, and the verification page removes it from the address bar once loaded.
+- The host above is a placeholder. Use the verification address for your Skaletek environment.
+
+A link that is incomplete or no longer valid shows **We couldn't start your verification**, with the text "This verification link is incomplete or no longer valid. Return to the service that sent you here and request a new link."
+
+## Deliver the link
+
+Create the session when the applicant is ready to start, then send them the link in one of these ways.
+
+| Delivery | How | Notes |
+| --- | --- | --- |
+| **Redirect** | Your backend answers the applicant's request with an HTTP redirect to the link. | The simplest option for a web app. |
+| **Button** | Your page shows a button, such as "Verify my identity", that opens the link. | Generate the link when the page loads, from your backend. |
+| **Email or SMS** | You send the link in your own message. Skaletek does not send it for you. | Set `expire_in` to cover the time the applicant needs to open it. |
+| **In-app web view** | Your mobile app opens the link in a web view. | The web view must allow camera access and inline video. A Flutter SDK is also in preview: see [Flutter SDK](/developers/ekyc/flutter-sdk). |
+
+Each session belongs to one applicant. Never reuse a link for another person.
+
+## What the applicant sees
+
+The pages work on phones and computers. The applicant can change the language at any time with the language button at the top (**En**): English, French, Spanish, German or Portuguese.
+
+<Steps>
+  <Step title="Welcome">
+    **Verify your identity** lists the steps left to complete, for example **ID verification** and **Face liveness**, with tips. The applicant clicks **Continue**.
+  </Step>
+  <Step title="Document photo">
+    The applicant reads "It takes about 3 minutes. You will need your ID and a camera." and clicks **Start capture**. The camera takes the photo automatically once the document is sharp. **Capture document manually** is available if it does not.
+  </Step>
+  <Step title="Document type">
+    The applicant confirms the **Issuing country**, pre-filled from the applicant's `jurisdiction`, and chooses the **Document type**. The list depends on the country, for example **Passport**, **National ID card**, **Driving licence** or **Residence permit**. **Retake picture** starts again.
+  </Step>
+  <Step title="Back of the document">
+    For a two-sided document, **Flip ID over** asks for the back. A passport skips this step. The document then uploads while the applicant waits on **Uploading your document**.
+  </Step>
+  <Step title="Check your details">
+    **Check your details** shows the first name, last name, date of birth, nationality, document number and expiry date read from the document. The applicant corrects any wrong value with the edit button and clicks **Confirm details**. Your reviewers see both the values read and the values confirmed.
+  </Step>
+  <Step title="Selfie">
+    **Take a selfie** asks the applicant to put their face in the oval. They click **Take photo**, then **Use this photo** or **Retake**.
+  </Step>
+  <Step title="Face scan">
+    **Get ready for your face scan** says it takes less than a minute. The applicant clicks **Start verification** and keeps their face in the oval until the scan completes.
+  </Step>
+  <Step title="Result">
+    The applicant sees the outcome and a **Return to partner** button. See [Result screens](#result-screens).
+  </Step>
+</Steps>
+
+<Columns cols={2}>
+  <Screenshot
+    name="ekyc-applicant-welcome"
+    alt="Welcome screen on a phone: Verify your identity, with the steps ID verification and Face liveness, and a Continue button."
+    src="/images/screenshots/ekyc-applicant-welcome.mobile.light.en.png"
+  />
+  <Screenshot
+    name="ekyc-applicant-document-intro"
+    alt="Document screen on a phone: It takes about 3 minutes, tips for lighting and holding the document steady, and a Start capture button."
+    src="/images/screenshots/ekyc-applicant-document-intro.mobile.light.en.png"
+  />
+  <Screenshot
+    name="ekyc-applicant-check-details"
+    alt="Check your details on a phone, from a test session: the fixed test identity Demo User with date of birth, nationality, document number and expiry date, each with an edit button, and Confirm details."
+    src="/images/screenshots/ekyc-applicant-check-details.mobile.light.en.png"
+  />
+  <Screenshot
+    name="ekyc-applicant-face-scan-done"
+    alt="End of the face scan on a phone: Identity verified, You're all set, and a Continue button."
+    src="/images/screenshots/ekyc-applicant-face-scan-done.mobile.light.en.png"
+  />
+</Columns>
+
+The **Check your details** screen above comes from a test session, so it shows the fixed test identity "Demo User".
+
+The applicant takes photos with the camera. The pages do not offer a file upload. If you already hold the images, use [API-only verification](/developers/ekyc/api-only) instead.
+
+The pages show the Skaletek name and logo. They cannot carry your own logo or colours yet, so tell your customers that a Skaletek page will open.
+
+### Result screens
+
+| Decision | The applicant sees |
+| --- | --- |
+| `APPROVED` | **You've been verified** |
+| `PENDING_REVIEW` | **Your verification is under review**: "The partner will share an update when the review is complete." |
+| `REJECTED` | **We couldn't verify your identity**: "Your verification could not be approved. Return to the partner for help with the next step." |
+
+<Columns cols={2}>
+  <Screenshot
+    name="ekyc-applicant-result-approved"
+    alt="Approved result on a computer: You've been verified, with a Return to partner button."
+    src="/images/screenshots/ekyc-applicant-result-approved.desktop.light.en.png"
+  />
+  <Screenshot
+    name="ekyc-applicant-result-rejected"
+    alt="Rejected result on a computer: We couldn't verify your identity, with a Return to partner button."
+    src="/images/screenshots/ekyc-applicant-result-rejected.desktop.light.en.png"
+  />
+</Columns>
+
+When a verification is under review, tell the applicant what happens next in your own app or messages. The result screen says that you will share an update.
+
+## Switch from computer to phone
+
+On a computer, the welcome screen also shows **Scan QR code**, with the note "Completing the steps on mobile has a higher success rate". The applicant scans the code with their phone and continues there. **Continue on this computer** keeps the flow on the computer, using its webcam.
+
+<Screenshot
+  name="ekyc-applicant-welcome-qr"
+  alt="Welcome screen on a computer: Verify your identity with a Scan QR code panel (code blurred) and a Continue on this computer link."
+  src="/images/screenshots/ekyc-applicant-welcome-qr.desktop.light.en.png"
+/>
+
+While the applicant moves to their phone, the session status is `AWAITING_DEVICE_SWITCH`. It returns to `IN_PROGRESS` when they continue.
+
+## One device at a time
+
+Only one device can work on a session at a time. If the link is opened in a second browser while the first one is active, the second one cannot continue. To move to another device, the applicant uses **Scan QR code**.
+
+## Resume an interrupted session
+
+If the applicant closes the page, they can open the same link again before the session expires. The flow resumes at the step they reached. The welcome screen lists only the steps that are left. A finished session shows its result again.
+
+So keep the link until the session ends. If the applicant asks for the link again, send the same one while the session is open.
+
+## Session expiry
+
+`expire_in` sets how long the session stays open, in minutes. The minimum is 5. The default is 60. Set it to match how you deliver the link: a few minutes for a redirect, longer for a link sent by email.
+
+When a session expires before the applicant finishes, its status becomes `EXPIRED` and the link stops working. An expired session cannot be reopened. Create a new session for the same applicant and send the new link.
+
+Read `expires_at` in the session response to know when the link stops working.
+
+## Return to your site
+
+The flow does not redirect automatically. On the result screen, **Return to partner** opens your `redirect_url` exactly as you set it, with no added parameters.
+
+Your redirect page must not trust the visit as a result:
+
+1. Find the session from your own records, for example from the logged-in customer.
+2. Read the result from your backend with `GET /v1/sessions/{session_id}`, or use the result your webhook already received.
+3. Show the next step based on that result.
+
+If the decision is not ready yet, show a waiting message and check again shortly. See [Sessions and statuses](/developers/ekyc/sessions-and-statuses).
+
+<Important>
+  The applicant controls the browser. Anyone can open your `redirect_url` without completing a verification. Only a result read from your backend, or received by webhook, counts as a decision.
+</Important>
+
+## Security
+
+- **Create sessions from your backend.** The KYC API accepts calls from servers only. Your API key must never reach a browser or a mobile app.
+- **Treat the link as personal.** The `session_jwt` in the link works only for that one session and cannot call any other endpoint. Still, anyone holding the link can continue that session, so send it only to the applicant.
+- **Use HTTPS for `redirect_url`.**
+- **Confirm every result server-side**, as described in [Return to your site](#return-to-your-site).
+
+## Related
+
+- [eKYC quickstart](/developers/ekyc/quickstart)
+- [Sessions and statuses](/developers/ekyc/sessions-and-statuses)
+- [Receiving results](/developers/ekyc/receiving-results)
+- [Test your integration](/developers/ekyc/testing)
+- [Verifying people](/guides/onboarding/verifying-people)

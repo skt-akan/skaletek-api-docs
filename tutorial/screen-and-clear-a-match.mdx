@@ -1,0 +1,114 @@
+---
+title: "Screen and clear a match"
+description: "Moussa Ndiaye's name nearly matches a sample sanctions list entry. Compare them side by side and clear the match as a false positive, with a reason."
+type: tutorial
+tracks: [operations]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+glossary_terms: [sanctions-screening, false-positive, disposition]
+---
+
+import { PageMeta, ExampleNote, TryIt, KeyTakeaway, Important, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["operations"]} minutes={6} availability="ga" />
+
+**In this chapter:** Moussa Ndiaye's name comes back as a near match on a sanctions list. You compare him with the list entry side by side.
+Then you clear the match as a false positive and record why, so anyone can follow your decision later. **Time:** 6 minutes.
+
+<ExampleNote />
+
+## What happens in the story
+
+When Moussa's profile is created, the platform screens his name against sanctions lists. Teranga Transfer must not pay a person under sanctions. In this example, the screening uses a clearly labelled **sample sanctions list** with one fictional entry.
+
+That entry's name is close to Moussa's. Close is not the same as identical: a near match is a question, not a finding. Someone has to look and decide whether this is the same person.
+
+## Why the decision matters
+
+Most screening matches are false positives: a different person who happens to share a similar name. Clearing them quickly matters, because a payout may be waiting. Clearing them carelessly matters more, because a missed true match is a serious breach.
+
+<Important>
+An undecided match stays open until someone reviews it. While it is open, it blocks the closing of any alert it is linked to. Decide every match, and always record your reason.
+</Important>
+
+## Find the match
+
+Open **Screening** and set the **Status** filter to **Pending**. The list shows every match still waiting for a decision. Moussa's match shows:
+
+- the subject: Moussa Ndiaye, with the Sample badge;
+- the list: the sample sanctions list;
+- the topic: sanctions;
+- what started the screening: his new profile.
+
+Select the match to open it.
+
+## Compare side by side
+
+The match opens on a side-by-side comparison. On the left are the details on Moussa's profile. On the right are the details of the list entry. Matching values and differences are highlighted, so you see at a glance where the two agree.
+
+| Detail | Moussa's profile | Sample list entry | What it tells you |
+| --- | --- | --- | --- |
+| Name | Moussa Ndiaye | A close spelling of the same name | Similar: this is why the screening matched |
+| Date of birth | From his profile | A different date of birth | Different |
+| Nationality | Senegalese | A different nationality | Different |
+
+The names are close. The date of birth and the nationality are not. Two independent details that differ are strong evidence that this is a different person.
+
+<Screenshot name="screening-match-moussa-comparison" alt="Moussa Ndiaye's screening match: his profile and the sample list entry side by side, with similar names and a different date of birth and nationality highlighted" />
+
+## Choose a disposition
+
+A disposition is your decision on a match. You have three choices.
+
+| Disposition | Button | When to use it | What happens next |
+| --- | --- | --- | --- |
+| **False positive** | **Mark as false positive** | The list entry is a different person | The match closes. This list entry is not raised again for Moussa on later screenings. No sanctions label is added to his profile. |
+| **Confirmed match** | **Confirm match** | The customer is the person on the list | A sanctions label is added to the profile, and rules that react to it can run |
+| **Escalated** | **Escalate** | You cannot decide alone | A senior reviewer decides. The match stays open and keeps blocking the closing of linked alerts. |
+
+## Clear it as a false positive
+
+<Steps>
+  <Step title="Choose the disposition">
+    On the match, select **Mark as false positive**.
+  </Step>
+  <Step title="Write the reason">
+    Explain your decision in a sentence someone else can check. For Moussa: "Different date of birth and different nationality from the list entry. Name similarity only."
+  </Step>
+  <Step title="Confirm">
+    Confirm your decision. The match leaves the inbox and Moussa's screening status becomes clear.
+  </Step>
+</Steps>
+
+Your decision is recorded with your name, the time and your reason. It cannot be erased. If new information appears later, a reviewer can reopen the decision, and that change is recorded too.
+
+<Tip>
+If you are unsure, select **Escalate** rather than guessing. A reasoned escalation is better evidence than a hurried clearance.
+</Tip>
+
+<TryIt>
+1. Go to **Screening** and open the match on Moussa Ndiaye.
+2. Compare the name, date of birth and nationality in the side-by-side view.
+3. Select **Mark as false positive** and enter the reason: "Different date of birth and different nationality from the list entry. Name similarity only."
+4. Open Moussa's profile and check that his screening status is now clear.
+</TryIt>
+
+<Accordion title="For developers" icon="code">
+  Screening runs and their matches are available through the API, so you can show screening status in your own systems. See the [API reference](/api-reference/introduction).
+</Accordion>
+
+<KeyTakeaway>
+A near match is a question you answer with evidence. Compare the details side by side, decide, and write down why: the reason is what makes your decision defensible later.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+Moussa's profile keeps every screening run on his name, the cleared match with your reason, and his current status. When the alert on Moussa becomes a case in chapter 9, the case brings in this cleared match, so the investigator sees the screening question was already answered and why.
+
+<Screenshot name="entities-profile-moussa-screening-tab" alt="Moussa Ndiaye's screening history: status clear, one match marked false positive, with the analyst's name, time and reason" />
+
+## Next
+
+- Next chapter: [Send transfers](/tutorial/send-transfers)
+- Go deeper: [Screening](/guides/screening/overview)

@@ -1,0 +1,187 @@
+---
+title: "Reason codes and document types"
+description: "Every reason code that explains an eKYC decision, with its step and effect, and the document type codes you can send or receive in the eKYC API."
+type: reference
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-21
+glossary_terms: [kyc]
+---
+
+import { PageMeta } from "/snippets/components.jsx";
+
+<PageMeta tracks={["build"]} minutes={6} availability="ga" />
+
+{/* Generated from the KYC catalog snapshot of 2026-10-21. Regenerate when the catalog changes. */}
+
+Reason codes explain why an electronic know your customer (eKYC) verification got its decision. You find them in `reason_codes` on `GET /v1/verifications/{verification_id}` and in the **eKYC Verification** event. See [Receive verification results](/developers/ekyc/receiving-results).
+
+<Note>
+  This list can grow. Codes not listed here may appear, for example `POLICY_PASSED`, which means all checks passed. Store reason codes as plain strings and don't reject unknown ones.
+</Note>
+
+## Effects
+
+Each code has an effect on the verification:
+
+| Effect | Meaning |
+| --- | --- |
+| `INFO` | Recorded for context. It does not change the decision on its own. |
+| `REVIEW` | A person needs to look at it. The decision becomes `PENDING_REVIEW` unless a failed check rejects the verification. |
+| `FAIL` | The check failed. Depending on the workflow, the applicant retakes the step or the verification is rejected. |
+
+Branch your own logic on `decision`, not on reason codes. Use reason codes to explain a decision to your team or to decide what to ask the customer for next.
+
+## Step reason codes
+
+Steps that a workflow does not run never produce their codes. For which steps each workflow runs, see [Verification workflows](/developers/ekyc/workflows). Abbreviations in the table: machine-readable zone (MRZ), near-field communication (NFC, the chip in a passport or ID card), anti-money laundering (AML).
+
+| Code | Step | Effect | Meaning |
+| --- | --- | --- | --- |
+| `CONTENT_TYPE_MISMATCH` | File upload | INFO | The file's real format differs from its declared format |
+| `FILE_CORRUPT` | File upload | REVIEW | The file is damaged or incomplete |
+| `FILE_EMPTY` | File upload | REVIEW | The uploaded file is empty |
+| `FILE_TOO_LARGE` | File upload | REVIEW | The uploaded file is over the size limit |
+| `FILE_TYPE_INVALID` | File upload | REVIEW | The file is not a supported image or PDF |
+| `IMAGE_TOO_LARGE` | File upload | REVIEW | The image has too many pixels to process |
+| `PDF_ACTIVE_CONTENT` | File upload | REVIEW | The PDF contains scripts or attachments |
+| `UPLOAD_EXHAUSTED` | File upload | REVIEW | Still no usable file after the last retake |
+| `JURISDICTION_NOT_IN_CATALOG` | Country check | INFO | Skaletek has no document coverage for this country yet |
+| `RETAKE_REQUESTED` | Document capture | INFO | The applicant was asked for a new photo |
+| `BAD_LIGHTING` | Image quality | FAIL | Capture too dark or overexposed |
+| `QUALITY_EXHAUSTED` | Image quality | REVIEW | Still poor quality after the last retake |
+| `CLASSIFICATION_LOW_CONFIDENCE` | Document type | INFO | The document type could not be confirmed |
+| `DOCUMENT_TYPE_MISMATCH` | Document type | REVIEW | Detected type differs from declared |
+| `DOCUMENT_TYPE_OVERRIDDEN` | Document type | INFO | Detected type differs; the applicant's choice stands |
+| `DOCUMENT_TYPE_UNRECOGNIZED` | Document type | INFO | The document type was not recognized |
+| `ISSUING_COUNTRY_MISMATCH` | Document type | REVIEW | Detected country differs from declared |
+| `COMPOSITE_CHECK_DIGIT` | Machine-readable zone (MRZ) | FAIL | A check digit in the machine-readable zone is invalid |
+| `MRZ_NOT_SUPPORTED_FOR_DOCUMENT` | Machine-readable zone (MRZ) | INFO | The document has no machine-readable zone |
+| `CHIP_AUTHENTICATION_FAILED` | Chip reading (NFC) | FAIL | Chip signature did not verify |
+| `MRZ_CHECK_COMPOSITE_INVALID` | Chip reading (NFC) | FAIL | The composite check digit is invalid |
+| `MRZ_CHECK_DATE_OF_BIRTH_INVALID` | Chip reading (NFC) | FAIL | The date of birth check digit is invalid |
+| `MRZ_CHECK_DOCUMENT_NUMBER_INVALID` | Chip reading (NFC) | FAIL | The document number check digit is invalid |
+| `MRZ_CHECK_EXPIRY_DATE_INVALID` | Chip reading (NFC) | FAIL | The expiry date check digit is invalid |
+| `MRZ_FORMAT_UNSUPPORTED` | Chip reading (NFC) | FAIL | The machine-readable zone format is not supported |
+| `NFC_CHIP_EMPTY` | Chip reading (NFC) | FAIL | Nothing was read from the chip |
+| `NFC_FALLBACK_TO_OCR` | Chip reading (NFC) | INFO | The chip was not read; the printed data was used instead |
+| `NFC_PARTNER_MISMATCH` | Chip reading (NFC) | INFO | The chip data differs from the data you supplied |
+| `EXTRACTION_EXHAUSTED` | Reading the document | REVIEW | Still unreadable after the last retake |
+| `EXTRACTION_INSUFFICIENT` | Reading the document | REVIEW | Too little of the document could be read |
+| `EXTRACTION_UNAVAILABLE` | Reading the document | REVIEW | The document could not be read automatically and needs a manual review |
+| `NFC_OCR_MISMATCH` | Reading the document | REVIEW | Printed data differs from the chip |
+| `NFC_OCR_MISMATCH_FLAGGED` | Reading the document | INFO | Printed data differs from the chip (flagged only) |
+| `OTHER_DOCUMENT_MANUAL_REVIEW` | Reading the document | REVIEW | An unlisted document needs a person to review it |
+| `PARTNER_MISMATCH` | Reading the document | INFO | The document differs from the data you supplied |
+| `REQUIRED_FIELD_MISSING` | Reading the document | REVIEW | A field the workflow requires was not read |
+| `DOCUMENT_EXPIRED` | Document validity | REVIEW | Document has expired |
+| `DOCUMENT_EXPIRING` | Document validity | REVIEW | The document expires within the workflow's window |
+| `APPLICANT_EDITED` | Applicant data review | INFO | Applicant changed extracted data |
+| `FONT_INCONSISTENCY` | Forgery check | FAIL | Inconsistent fonts on the document |
+| `IMAGE_PROPERTIES` | Forgery check | FAIL | The image properties suggest editing |
+| `TAMPER_CHECK_UNAVAILABLE` | Forgery check | REVIEW | Forgery check could not run |
+| `TAMPER_DETECTED` | Forgery check | FAIL | The document shows signs of tampering |
+| `TAMPER_SUSPECTED` | Forgery check | INFO | Possible signs of tampering (flagged only) |
+| `CONCURRENT_DEVICE_ATTEMPT` | Image and session checks | INFO | A second device tried to use the session |
+| `DOCUMENT_REUSE_CROSS_APPLICANT` | Image and session checks | REVIEW | Image already submitted by another applicant |
+| `EXIF_ABSENT_LIVE_CAPTURE` | Image and session checks | REVIEW | The image does not look like a live camera capture |
+| `SOFTWARE_EDITING_TOOL` | Image and session checks | REVIEW | The image was saved by an editing app |
+| `THUMBNAIL_INCONSISTENCY` | Image and session checks | REVIEW | Signs that the image was edited after capture |
+| `TIMESTAMP_FUTURE` | Image and session checks | REVIEW | The image is dated in the future |
+| `CHALLENGE_FAILED` | Liveness (face scan) | FAIL | The face scan was not completed |
+| `LIVENESS_BELOW_THRESHOLD` | Liveness (face scan) | FAIL | Live, but not with enough certainty for the workflow |
+| `LIVENESS_FAILED` | Liveness (face scan) | FAIL | The face scan was judged not live |
+| `LIVENESS_UNCERTAIN` | Liveness (face scan) | REVIEW | Liveness could not be confirmed from the image |
+| `SPOOF_SCREEN` | Liveness (face scan) | FAIL | Selfie appears to be a screen replay |
+| `FACE_MISMATCH` | Face match | FAIL | Selfie does not match the document |
+| `FACE_NOT_FOUND` | Face match | FAIL | No face found |
+| `FACE_NOT_FOUND_ON_DOCUMENT` | Face match | FAIL | No face found on the document |
+| `FACE_NOT_FOUND_ON_SELFIE` | Face match | FAIL | No face found on the selfie |
+| `MATCH_LOW_CONFIDENCE` | Face match | FAIL | The face match is not certain enough |
+| `FACE_DUPLICATE` | Duplicate face check | FAIL | The same face was already verified in another applicant's session |
+| `ADDRESS_DOCUMENT_DATE_UNREADABLE` | Proof of address | REVIEW | No date read on the proof |
+| `ADDRESS_DOCUMENT_TOO_OLD` | Proof of address | REVIEW | Proof older than the workflow allows |
+| `ADDRESS_EXTRACTION_UNAVAILABLE` | Proof of address | REVIEW | Proof could not be read |
+| `ADDRESS_JURISDICTION_MISMATCH` | Proof of address | REVIEW | Proof is from another country |
+| `ADDRESS_MISMATCH` | Proof of address | REVIEW | Proof differs from the typed address |
+| `ADDRESS_NAME_MISMATCH` | Proof of address | REVIEW | Proof names someone else |
+| `ADDRESS_NOT_VERIFIED` | Proof of address | FAIL | Proof of address not verified |
+| `DATABASE_MISMATCH` | Registry check | FAIL | Registry record does not match |
+| `REGISTRY_UNAVAILABLE` | Registry check | INFO | No registry for this jurisdiction yet |
+| `AML_ADVERSE_MEDIA_MATCH` | AML screening | REVIEW | Potential adverse media |
+| `AML_ASSET_FREEZE_MATCH` | AML screening | REVIEW | Potential asset-freeze listing |
+| `AML_PEP_MATCH` | AML screening | REVIEW | Potential politically exposed person |
+| `AML_POTENTIAL_MATCH` | AML screening | REVIEW | Screening returned a potential match |
+| `AML_SANCTIONS_MATCH` | AML screening | REVIEW | Potential sanctions match |
+| `SCREENING_FAILED` | AML screening | REVIEW | The screening run failed or timed out |
+| `SCREENING_UNAVAILABLE` | AML screening | REVIEW | Screening could not run |
+| `RISK_SCORE_REVIEW_THRESHOLD` | Risk assessment | REVIEW | The overall risk needs a review |
+| `MAX_ATTEMPTS_REACHED` | Any step | INFO | Step ran out of attempts |
+| `REVIEWER_REQUESTED_REDO` | Any step | INFO | An analyst reopened the step |
+
+Skaletek also records other signals about images and sessions for your reviewers. They are informational and are not listed here.
+
+## Workflow rule codes
+
+Admins can add rules to a workflow, for example to send a weak face match to review. When a rule applies, its code is added to the reason codes. The rule sets the effect.
+
+| Code | Step | Meaning |
+| --- | --- | --- |
+| `RULE_DATA_MISMATCH` | Reading the document | The data read from the document does not match |
+| `RULE_LOW_EXTRACTION_CONFIDENCE` | Reading the document | The document was read with low certainty |
+| `RULE_UNSUPPORTED_DOCUMENT` | Document type | The workflow does not accept this document |
+| `RULE_FOREIGN_LOCATION` | Country check | The applicant connected from another country |
+| `RULE_UNDERAGE` | Reading the document | The applicant is under the workflow's minimum age |
+| `RULE_DOCUMENT_EXPIRING` | Reading the document | The document expires soon |
+| `RULE_DATA_CORRECTED` | Applicant data review | The applicant corrected data read from the document |
+| `RULE_TAMPERING` | Forgery check | Signs of document tampering |
+| `RULE_SPOOF_SUSPECTED` | Liveness (face scan) | Suspected spoofing during the face scan |
+| `RULE_WEAK_FACE_MATCH` | Face match | Weak face match |
+
+## Document types
+
+Use these codes in `document_type`, for example in the `documents` of an [API-only verification](/developers/ekyc/api-only). The same codes appear in applicant records and in events. Identity documents are the ones you can use to verify a person; proof of address documents support an address check.
+
+"Manual review only" means Skaletek does not check the document automatically. A verification with that document always goes to a reviewer.
+
+| Code | Category | Label | Manual review only |
+| --- | --- | --- | --- |
+| `consular_id` | Identity | Consular ID card | No |
+| `driving_license` | Identity | Driving licence | No |
+| `health_id` | Identity | Health ID card | No |
+| `military_id` | Identity | Military ID card | No |
+| `national_id` | Identity | National ID card | No |
+| `other` | Identity | Other identity document | Yes |
+| `passport` | Identity | Passport | No |
+| `residence_permit` | Identity | Residence permit | No |
+| `tax_id_card` | Identity | Tax ID card | No |
+| `travel_document` | Identity | Travel document | No |
+| `visa` | Identity | Visa | Yes |
+| `voter_id` | Identity | Voter ID card | No |
+| `aadhaar` | Proof of address | Aadhaar | No |
+| `bank_statement` | Proof of address | Bank statement | No |
+| `council_tax_bill` | Proof of address | Council tax bill | No |
+| `digital_address_credential` | Proof of address | Digital address credential | No |
+| `driving_license_address` | Proof of address | Driving licence (address) | No |
+| `employer_residence_letter` | Proof of address | Employer residence letter | No |
+| `government_correspondence` | Proof of address | Government letter | No |
+| `lease_agreement` | Proof of address | Lease agreement | No |
+| `other_address` | Proof of address | Other proof of address | Yes |
+| `property_tax_receipt` | Proof of address | Property tax receipt | No |
+| `residence_certificate` | Proof of address | Residence certificate | No |
+| `utility_bill` | Proof of address | Utility bill | No |
+| `digital_id_wallet` | Digital identity | Digital ID wallet | No |
+| `e_residency_id` | Digital identity | e-Residency ID | No |
+| `government_api_credential` | Digital identity | Government API credential | No |
+
+## Country codes
+
+Country fields in the eKYC API, such as `nationality`, `jurisdiction` and `issuing_country`, take lowercase ISO 3166-1 alpha-2 codes, for example `sn` for Senegal and `fr` for France. Skaletek accepts 249 country codes.
+
+## Related
+
+- [Receive verification results](/developers/ekyc/receiving-results)
+- [Verification workflows](/developers/ekyc/workflows)
+- [API-only verification](/developers/ekyc/api-only)
+- [Reviewing a verification](/guides/onboarding/reviewing-a-verification)

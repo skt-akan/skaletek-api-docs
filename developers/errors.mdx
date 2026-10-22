@@ -1,0 +1,53 @@
+---
+title: "Errors"
+description: "The error response format and what each status code means."
+type: reference
+tracks: [build]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+---
+
+Skaletek uses standard HTTP status codes. Any response with a `4xx` or `5xx` status has a JSON
+body in the same shape.
+
+```json
+{
+  "code": "VALIDATION_ERROR",
+  "message": "Name is required"
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `code` | string | A stable, machine-readable code. Branch on this, not on `message`. |
+| `message` | string | A human-readable explanation. The wording can change. |
+| `details` | object | Extra context for some errors. Optional. |
+| `request_id` | string | The request ID. Included on `5xx` responses. |
+
+## Status codes
+
+| Status | Code | When it happens |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | The request does not match the schema, or a value is invalid. Some endpoints return a more specific code. |
+| `401` | `UNAUTHORIZED` | The credential is missing, invalid or expired. |
+| `403` | `FORBIDDEN` | The credential lacks the permission for this request. |
+| `404` | `NOT_FOUND` | The resource does not exist, or belongs to another tenant. |
+| `409` | `CONFLICT` | The request conflicts with current state, such as a duplicate key or slug. |
+| `413` | `PAYLOAD_TOO_LARGE` | The request body is too large. |
+| `415` | `UNSUPPORTED_MEDIA_TYPE` | The `Content-Type` is not supported. |
+| `429` | `RATE_LIMITED` | Too many requests. Wait, then retry. |
+| `5xx` | `INTERNAL_ERROR` | Something failed on our side. The body includes `request_id`. |
+
+## Handling errors
+
+- **`4xx` other than `429`:** fix the request before retrying. Sending it again unchanged returns
+  the same error.
+- **`429` and `5xx`:** retry with exponential backoff.
+- **`5xx`:** if it persists, contact support with the `request_id`.
+
+<Note>
+  Event ingestion reports validation problems differently. An event that fails template
+  validation is stored in quarantine and the response describes what failed, so you can correct
+  and retry it. See the event endpoints for the response shape.
+</Note>

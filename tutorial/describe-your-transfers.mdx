@@ -1,0 +1,98 @@
+---
+title: "Describe your transfers"
+description: "See how the Remittance transfer template describes each transfer, how its roles turn senders and recipients into customer profiles, and how to adapt it."
+type: tutorial
+tracks: [configure]
+availability: ga
+owner: docs
+last_reviewed: 2026-10-20
+glossary_terms: [template, role, entity, parameter]
+---
+
+import { PageMeta, ExampleNote, TryIt, KeyTakeaway, Screenshot } from "/snippets/components.jsx";
+
+<PageMeta tracks={["configure"]} minutes={6} availability="ga" />
+
+**In this chapter:** you open the _Remittance transfer_ template and see what a transfer looks like to the platform.
+You learn how each sender and recipient becomes a customer profile, and how to adapt the template to your own data. **Time:** 6 minutes.
+
+<ExampleNote />
+
+## What happens in the story
+
+Before Teranga Transfer sends any transfer, the platform needs to know what a transfer contains. That description is a **template**: the kind of event, the parties involved and the fields each one carries. The remittance starter pack installed one for you, _Remittance transfer_.
+
+Every transfer that arrives is checked against this template. A transfer that is missing something is set aside so it can be corrected. Nothing is lost silently.
+
+## The roles in a transfer
+
+A template is built from **roles**: named slots for each party or fact in the event. _Remittance transfer_ has four.
+
+| Role | Kind | What it holds | In transfer `SAMPLE-REMIT-0001` |
+| --- | --- | --- | --- |
+| **Sender** | Person | Name, date of birth, nationality, phone, identity document, address | Aminata Sow, Lyon |
+| **Recipient** | Person | Name, phone, address | Moussa Ndiaye, Dakar |
+| **Payout agent** | Organization | Agent code, trading name, city. Optional when the money goes to a mobile wallet. | Point Marché Tilène |
+| **Transaction** | Transfer details | Amount, fee, origin and destination country, payout method (cash, mobile wallet or bank account), wallet number for wallet payouts | 4 750 000 XOF (West African CFA francs), France to Senegal, cash |
+
+The template also names its key facts: the amount, the reference (Teranga's transfer number) and the **subject**. The subject is the role that alerts and cases are about. For remittances, the subject is the recipient, so the alert in chapter 7 is about Moussa, not about one of his senders.
+
+## How senders and recipients become customer profiles
+
+Each person and organization role lists its **identifiers**: fields that tell one customer from another, such as a phone number, an identity document number or an agent code. You set their order in the template.
+
+When a transfer arrives, the platform looks for an existing customer profile with the same identifier, in the order you set. If it finds one, it links the transfer to that profile. If it finds none, it creates a new profile.
+
+That is how Moussa ends up with one profile, even though three different senders paid him. Each transfer names him as recipient with the same identifiers, so all five land on the same profile. When two profiles might be the same customer, the platform proposes a merge for a person to review. It never merges profiles on its own.
+
+<Screenshot name="settings-template-remittance-roles" alt="The Remittance transfer template showing its four roles, with the identifiers of the sender, recipient and payout agent roles marked" />
+
+## Adapt it to your data
+
+The template is yours. You can change it to match the data your systems hold.
+
+- **Add a field.** For example, add a transfer purpose to the transaction role.
+- **Hide fields you never send.** The pack already hides person fields a remittance does not use.
+- **Change identifiers.** Put the identifier your systems fill most reliably first.
+- **Check the threshold you can set.** The Declaration threshold parameter starts at 5 000 000 XOF, a simplified illustration. The starter rules read it, so you change the value in one place.
+
+Changing an active template creates a new version. Transfers already received keep the version they arrived with.
+
+<Tabs>
+  <Tab title="In the product">
+    1. Go to **Settings** › **Configuration** › **Templates** and open _Remittance transfer_.
+    2. On the **Roles** tab, review the roles, their fields and their identifiers.
+    3. To make a change, create a new draft version, edit it, then activate it.
+  </Tab>
+  <Tab title="Try it with the API">
+    Find the template by its slug and keep its ID for later requests.
+
+    ```bash
+    curl -s "$SKALETEK_API_URL/templates?q=remittance-transfer" \
+      -H "X-API-Key: $SKALETEK_API_KEY"
+    ```
+
+    Read the schema a valid transfer must match with `GET /templates/{id}/schema`. The [Quickstart](/developers/quickstart) shows how to reduce it to the fields each role requires.
+  </Tab>
+</Tabs>
+
+<TryIt>
+1. Go to **Settings** › **Configuration** › **Templates** and open _Remittance transfer_.
+2. On the **Roles** tab, open the Recipient role and look at its identifiers.
+3. On the **Overview** tab, find Declaration threshold under Parameters in the **Summary**. Note its value: you will see it again in chapters 7 and 11.
+</TryIt>
+
+<KeyTakeaway>
+The template tells the platform what a transfer contains and who is involved. Its identifiers are what bring three senders' transfers together on one recipient's profile.
+</KeyTakeaway>
+
+## Where it shows in the 360° view
+
+Each role becomes a link on the transfer and a profile in **Entities**. On Moussa's profile, every transfer shows him in the **Recipient** role, next to the sender and the payout agent.
+
+<Screenshot name="entities-profile-moussa-activity-roles" alt="Moussa Ndiaye's activity list, with each transfer showing him as recipient and naming its sender and payout agent" />
+
+## Next
+
+- Next chapter: [Onboard a sender](/tutorial/onboard-a-sender)
+- Go deeper: [Monitoring](/guides/monitoring/overview)
