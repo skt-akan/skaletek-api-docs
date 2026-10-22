@@ -1,79 +1,100 @@
 ---
-title: "Skaletek documentation"
-sidebarTitle: "What Skaletek is"
-description: "Skaletek gives you one view of every customer and counterparty, from onboarding and screening to monitoring, investigation and reporting."
+title: "Get started with Skaletek"
+sidebarTitle: "Get started"
+description: "Verify customers, screen names, monitor transfers, investigate alerts and file reports. Pick what you want to do and start in minutes."
 type: concept
 tracks: [operations, configure, build]
 availability: ga
 owner: docs
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-22
 ---
 
-import { AGENT, PageMeta, ExampleNote } from "/snippets/components.jsx";
+import { PageMeta } from "/snippets/components.jsx";
 
-<PageMeta tracks={["operations", "configure", "build"]} minutes={4} availability="ga" />
+<PageMeta tracks={["operations", "configure", "build"]} minutes={2} availability="ga" />
 
-Skaletek helps you know your customers and the businesses you work with, and act when something looks wrong. You follow each customer (a person) and each counterparty (an organization) in one continuous view. That view starts when you onboard them and stays with them for as long as you work together.
+Skaletek helps you know your customers and the businesses you work with, and act when something looks wrong. One customer profile follows each person and organization from onboarding to reporting.
 
-## One platform, the whole customer lifecycle
+## What do you want to do?
 
-Skaletek covers six stages. Each stage adds what it learns to the same customer profile, so nothing gets lost between teams or tools.
-
-```mermaid
-flowchart LR
-    A[Onboard] --> B[Screen]
-    B --> C[Monitor]
-    C --> D[Investigate]
-    D --> E[Report]
-    E --> F[Stay compliant]
-```
-
-| Stage | What you do |
-| --- | --- |
-| **Onboard** | Verify people with know your customer (KYC) checks and organizations with know your business (KYB) checks, including who owns and controls them. |
-| **Screen** | Check names against sanctions lists and lists of politically exposed persons (PEPs), and record your decision on each potential match. |
-| **Monitor** | Watch transfers, payments and other activity against rules and thresholds you set, for anti-money laundering (AML), fraud and operational risk. |
-| **Investigate** | Read why an alert was raised, then gather the evidence in a case and record your findings. |
-| **Report** | Draft, review and file reports to authorities, such as a suspicious transaction report (STR). |
-| **Stay compliant** | Follow regulatory change and see which of your controls each obligation affects. |
-
-The place where all of this comes together is the customer profile. Read [The 360° customer view](/get-started/360-view) to see what it holds.
-
-## See it in one story
-
-These docs follow one fictional company from start to finish. Teranga Transfer is a money transfer company in Senegal. Over six days, three senders in France and Italy send five transfers to the same man in Dakar, Moussa Ndiaye. Each transfer stays just under the declaration threshold of 5,000,000 West African CFA francs (XOF).
-
-<ExampleNote />
-
-The story shows what Skaletek does, rather than telling you:
-
-- **You see everything about Moussa in one place.** His profile shows the three senders, the payout agent that paid most of his transfers in cash, his cleared screening match and the open case.
-- **You set the rules.** The rule that catches the pattern and its 5,000,000 XOF threshold are settings Teranga owns and can change.
-- **Automation does the groundwork, and a person decides.** {AGENT}, the AI assistant (in preview), gathers the evidence and drafts a case summary. The money laundering reporting officer (MLRO) decides whether there is suspicion and approves the report.
-- **Every alert is explained.** The alert names the rule, the threshold, the time window and the exact transfers that triggered it.
-
-## Pick your track
-
-Choose the path that matches your role. You can switch at any time.
-
-<CardGroup cols={3}>
-  <Card title="Compliance & Operations" icon="user-shield" href="/get-started/tracks/operations">
-    Review alerts, investigate cases, file reports and prove compliance. No code.
+<CardGroup cols={2}>
+  <Card title="Verify a customer's identity" icon="id-card" href="/developers/ekyc/quickstart">
+    Start a test know your customer (KYC) check, complete it in your browser and read the decision. 15 minutes, with curl.
   </Card>
-  <Card title="Configure" icon="sliders" href="/get-started/tracks/configure">
-    Describe your data, write and test rules, set thresholds and manage your team.
+  <Card title="Send transfers and get your first alert" icon="paper-plane" href="/developers/quickstart">
+    Send three transfers through the API, add a rule and read the alert it raises. 15 minutes, with curl.
   </Card>
-  <Card title="Build" icon="code" href="/get-started/tracks/build">
-    Connect your systems: API keys, events, webhooks and the API reference.
+  <Card title="Review an alert" icon="bell" href="/tutorial/an-alert-explained">
+    Read why an alert was raised, check the transfers behind it and decide what to do. No code.
+  </Card>
+  <Card title="Set up your rules" icon="sliders" href="/guides/monitoring/overview">
+    Describe the events your business sends, write rules and set thresholds you own.
+  </Card>
+  <Card title="Clear a screening match" icon="user-check" href="/guides/screening/overview">
+    Check names against sanctions and politically exposed person (PEP) lists and record your decision.
+  </Card>
+  <Card title="See the whole platform in 15 minutes" icon="route" href="/get-started/tour">
+    Follow five transfers from the first alert to a filed report, with screenshots at every stop.
   </Card>
 </CardGroup>
 
-## Start with the 15-minute tour
+## Set up in four steps
 
-<Card title="Take the 15-minute tour" icon="route" href="/get-started/tour">
-  Follow Moussa's five transfers from the first alert to the filed report, with screenshots at every stop.
-</Card>
+<Steps>
+  <Step title="Get an account">
+    [Start a free trial](https://app.skaletek.example/signup?pack=remittance) with sample data loaded (preview), or [book a demo](https://skaletek.example/book-a-demo) to see it with our team.
+  </Step>
+  <Step title="Create an API key">
+    Go to **Settings** › **General Settings** › **Configurations** › **API keys** and click **Create keys**. Give the key only the permissions it needs. See [Authentication](/developers/authentication).
+  </Step>
+  <Step title="Bring your data in">
+    Send events through the API, as in the [developer quickstart](/developers/quickstart), or upload a spreadsheet with no code (preview). See [Getting data in](/guides/getting-data-in/overview).
+  </Step>
+  <Step title="Work your first alert">
+    Open **Alerts**, read the explanation and decide. See the [Alerts guide](/guides/alerts/overview).
+  </Step>
+</Steps>
 
-## Try Skaletek
+## Explore by stage
 
-[Start free trial](https://app.skaletek.example/signup) to try Skaletek yourself, or [book a demo](https://skaletek.example/book-a-demo) to see it with our team.
+Every stage adds what it learns to the same [customer profile](/get-started/360-view).
+
+<CardGroup cols={3}>
+  <Card title="Onboard" icon="id-badge" href="/guides/onboarding/overview">
+    Verify people (KYC) and organizations (KYB), including who owns them.
+  </Card>
+  <Card title="Screen" icon="magnifying-glass" href="/guides/screening/overview">
+    Check names against sanctions and PEP lists.
+  </Card>
+  <Card title="Monitor" icon="chart-line" href="/guides/monitoring/overview">
+    Watch activity against your rules for anti-money laundering (AML) and fraud.
+  </Card>
+  <Card title="Investigate" icon="folder-open" href="/guides/cases/overview">
+    Read why an alert was raised and gather the evidence in a case.
+  </Card>
+  <Card title="Report" icon="file-lines" href="/guides/reporting/overview">
+    Draft and file reports, such as a suspicious transaction report (STR).
+  </Card>
+  <Card title="Stay compliant" icon="scale-balanced" href="/guides/regulatory-compliance/overview">
+    Follow regulatory change and see which controls it affects. Preview.
+  </Card>
+</CardGroup>
+
+## For developers
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/developers/authentication">
+    Create an API key and authenticate your requests.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/introduction">
+    Every endpoint, request and response.
+  </Card>
+  <Card title="Hosted verification flow" icon="window-maximize" href="/developers/ekyc/hosted-flow">
+    Send applicants to a ready-made identity verification flow.
+  </Card>
+  <Card title="Receive verification results" icon="bell" href="/developers/ekyc/receiving-results">
+    Get each decision as a webhook.
+  </Card>
+</CardGroup>
+
+Not sure where to start? [Pick your track](/get-started/pick-your-track) by role, or look up a term in the [glossary](/glossary).
